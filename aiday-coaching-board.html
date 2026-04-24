@@ -794,6 +794,8 @@ async function confirmAssign() {
   render();
   try {
     await Promise.all([saveTopic(t), saveCoach(coachId)]);
+    // Force reload from Supabase to ensure all clients are in sync
+    await loadFromSupabase();
   } catch(e) {
     console.error('Save failed:', e);
   }
@@ -856,14 +858,20 @@ async function freeCoach(coachId) {
   const cs = state.coaches[coachId];
   if (!cs.topicId) return;
   const t = state.topics.find(x => x.id === cs.topicId);
-  if (t) { t.coachId = null; t.room = null; t.done = true; }
+  const coach = COACHES.find(c => c.id === coachId);
+  if (t) { t.coachId = null; t.room = null; t.startTime = null; t.done = true; }
   cs.topicId = null;
   cs.sessionsDone = (cs.sessionsDone || 0) + 1;
   render();
-  launchConfetti();
-  const saves = [saveCoach(coachId)];
-  if (t) saves.push(saveTopic(t));
-  await Promise.all(saves);
+  launchConfetti(coach ? coach.name : null);
+  try {
+    const saves = [saveCoach(coachId)];
+    if (t) saves.push(saveTopic(t));
+    await Promise.all(saves);
+    await loadFromSupabase();
+  } catch(e) {
+    console.error('freeCoach save failed:', e);
+  }
 }
 
 function render() {
@@ -1102,10 +1110,14 @@ function isHybrid(t) {
 
 function roundUpToFive(iso) {
   const d = new Date(iso);
-  const mins = d.getMinutes();
-  const rounded = Math.ceil(mins / 5) * 5;
-  d.setMinutes(rounded, 0, 0);
-  return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  const now = new Date();
+  if (d <= now) return "Now";
+  const remainder = d.getMinutes() % 5;
+  if (remainder !== 0) d.setMinutes(d.getMinutes() + (5 - remainder), 0, 0);
+  else d.setSeconds(0, 0);
+  const diff = Math.round((d - now) / 60000);
+  const timeStr = d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  return timeStr + " (in " + diff + " min)";
 }
 
 function formatStartTime(iso) {
@@ -1273,7 +1285,7 @@ function renderMobileCoaches() {
 
 loadFromSupabase();
 setInterval(() => { loadFromSupabase(); }, 8000);
-setInterval(() => { if(currentView === "tv") renderTvTopics(); }, 30000);
+setInterval(() => { if(currentView === "tv") renderTvTopics(); }, 10000);
 </script>
 </body>
 </html>
