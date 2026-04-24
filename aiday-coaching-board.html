@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>AI Day — Coaching Board</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -453,7 +454,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 <!-- Confirmation Modal -->
 
 <div class="confetti-container" id="confetti-container"></div>
-<div class="done-toast" id="done-toast">🎉 Session done! Great coaching!</div>
+<div class="done-toast" id="done-toast">&#x1F389; Session done! Great coaching!</div>
 
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-modal">
@@ -492,7 +493,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 <div class="confetti-container" id="confetti-container"></div>
 <div class="celebration-overlay" id="celebration-overlay" style="display:none">
   <div class="celebration-msg">
-    <div class="celebration-emoji" id="celebration-emoji">🎉</div>
+    <div class="celebration-emoji" id="celebration-emoji">&#x1F389;</div>
     <div class="celebration-text" id="celebration-text">Session complete!</div>
     <div class="celebration-sub" id="celebration-sub">Great work!</div>
   </div>
@@ -500,7 +501,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 
 <script>
 
-const EMOJIS = ["🎉","🚀","🙌","⚡","🔥","💡","🎊","✨","🤖","💪"];
+const EMOJIS = ["&#x1F389;","🚀","🙌","⚡","🔥","💡","🎊","✨","🤖","💪"];
 const MESSAGES = [
   ["Nailed it! 🤖", "Another AI use case conquered!"],
   ["Session complete! 🚀", "One step closer to the AI future!"],
@@ -659,10 +660,10 @@ if (localStorage.getItem("aiday_version") !== CACHE_VERSION) {
 }
 
 const ROOMS = [
-  "Projector Room 🌐",
-  "Seaview 🌐",
+  "Projector Room &#x1F310;",
+  "Seaview &#x1F310;",
   "Community Room",
-  "Skydeck 🌐",
+  "Skydeck &#x1F310;",
   "UFO",
   "Crazy Cube",
   "Lunch Area",
@@ -837,7 +838,7 @@ function launchConfetti() {
   // Show toast
   const toast = document.getElementById("done-toast");
   const messages = [
-    "🎉 Session done! Great coaching!",
+    "&#x1F389; Session done! Great coaching!",
     "🚀 Another one crushed!",
     "⚡ Coach of the day material!",
     "🏆 That's what we call impact!",
@@ -944,10 +945,10 @@ function renderFilterPanel() {
 
 function chipsHtml(owner, participants, ownerPresence, participantPresence) {
   const op = ownerPresence === "remote";
-  const ownerChip = `<span class="chip chip-owner ${op ? "chip-remote" : ""}">${esc(owner)}${op ? " 🌐" : ""}</span>`;
+  const ownerChip = `<span class="chip chip-owner ${op ? "chip-remote" : ""}">${esc(owner)}${op ? " &#x1F310;" : ""}</span>`;
   const pChips = (participants||[]).map(p => {
     const rp = participantPresence && participantPresence[p] === "remote";
-    return `<span class="chip chip-joined ${rp ? "chip-remote" : ""}">${esc(p)}${rp ? " 🌐" : ""}</span>`;
+    return `<span class="chip chip-joined ${rp ? "chip-remote" : ""}">${esc(p)}${rp ? " &#x1F310;" : ""}</span>`;
   }).join("");
   return `<div class="chips">${ownerChip}${pChips}</div>`;
 }
