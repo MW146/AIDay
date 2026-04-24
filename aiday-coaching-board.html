@@ -338,6 +338,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .coaches-no-topics { font-size: 13px; color: var(--wb-text3); padding: 12px 0; text-align: center; }
 .coach-free-row { margin-bottom: 8px; }
 .badge-time { background: rgba(255,255,255,0.06); color: #9a9aaa; border: 0.5px solid rgba(255,255,255,0.1); font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+
+/* Accordion */
+.accordion { background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius-lg); margin-bottom: 10px; overflow: hidden; }
+.accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; }
+.accordion-header:hover { background: var(--wb-surface2); }
+.accordion-header-left { display: flex; align-items: center; gap: 8px; }
+.accordion-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.accordion-title { font-size: 13px; font-weight: 600; color: var(--wb-text); }
+.accordion-count { background: var(--wb-surface2); color: var(--wb-text2); font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 0.5px solid var(--wb-border); }
+.accordion-arrow { font-size: 12px; color: var(--wb-text3); transition: transform 0.2s; }
+.accordion-arrow.open { transform: rotate(180deg); }
+.accordion-body { display: none; padding: 0 12px 12px; }
+.accordion-body.open { display: block; }
 </style>
 </head>
 <body>
@@ -403,10 +416,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 
 <div id="view-coach">
   <div class="mobile-layout">
-    <div class="card">
-      <div class="card-title">Take a topic</div>
-      <div id="m-coaches"></div>
-    </div>
+    <div id="m-coaches"></div>
   </div>
 </div>
 
@@ -537,12 +547,13 @@ async function sbFetch(path, method='GET', body=null) {
       'apikey': SUPABASE_KEY,
       'Authorization': 'Bearer ' + SUPABASE_KEY,
       'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'resolution=merge-duplicates' : ''
+      'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
     }
   };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
   if (method === 'GET') return res.json();
+  if (!res.ok) { const err = await res.text(); console.error('Supabase error:', err); }
   return res;
 }
 
@@ -702,12 +713,17 @@ async function confirmAssign() {
   const t = state.topics.find(x => x.id === topicId);
   if (!t || !cs) return;
   // Calculate start time
-  const startTime = startDelay > 0
-    ? new Date(Date.now() + startDelay * 60000)
-    : new Date();
-  t.coachId = coachId; t.room = room; t.startTime = startTime.toISOString(); cs.topicId = topicId;
+  const startTime = new Date(Date.now() + (startDelay || 0) * 60000);
+  t.coachId = coachId;
+  t.room = room;
+  t.startTime = startTime.toISOString();
+  cs.topicId = topicId;
   render();
-  await Promise.all([saveTopic(t), saveCoach(coachId)]);
+  try {
+    await Promise.all([saveTopic(t), saveCoach(coachId)]);
+  } catch(e) {
+    console.error('Save failed:', e);
+  }
 }
 
 function closeConfirm() {
@@ -995,6 +1011,15 @@ function roomOpts(coachId) {
   return `<option value="">— select a room —</option>${opts}`;
 }
 
+// Track accordion open states
+const accordionState = { busy: true, free: true };
+
+function toggleAccordion(key) {
+  accordionState[key] = !accordionState[key];
+  document.getElementById("acc-body-" + key).classList.toggle("open", accordionState[key]);
+  document.getElementById("acc-arrow-" + key).classList.toggle("open", accordionState[key]);
+}
+
 function renderMobileCoaches() {
   // Save dropdown selections
   const savedSelections = {};
@@ -1016,24 +1041,19 @@ function renderMobileCoaches() {
 
   let html = "";
 
-  // ── MY SESSION (if I'm in one) ──
-  // Show busy coaches first as a prominent section
-  if (busyCoaches.length) {
-    html += `<div class="coaches-section-title">
-      <div class="coaches-section-dot dot-busy"></div>In session
-      <span class="coaches-section-count">${busyCoaches.length}</span>
-    </div>`;
+  // ── ACCORDION 1: IN SESSION ──
+  let busyBody = "";
+  if (!busyCoaches.length) {
+    busyBody = `<div class="coaches-no-topics">No active sessions yet.</div>`;
+  } else {
     busyCoaches.forEach(c => {
       const cs = state.coaches[c.id];
       const t = cs.topicId ? state.topics.find(x => x.id === cs.topicId) : null;
       const people = t ? [t.owner, ...t.participants] : [];
-      html += `<div class="coach-assign-block busy-block">
+      busyBody += `<div class="coach-assign-block busy-block" style="margin-top:8px">
         <div class="ca-top">
           <div class="avatar av-busy">${c.initials}</div>
-          <div>
-            <div class="ca-name">${esc(c.name)}</div>
-            <div class="ca-status busy">In session</div>
-          </div>
+          <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status busy">In session</div></div>
           ${t && t.room ? `<span class="badge ${t.room === "Remote" ? "badge-remote" : "badge-room"} ca-room-badge">${esc(t.room)}</span>` : ""}
         </div>
         ${t ? `<div class="ca-session">"${esc(t.text.slice(0,90))}${t.text.length>90?"…":""}"</div>` : ""}
@@ -1043,44 +1063,62 @@ function renderMobileCoaches() {
     });
   }
 
-  // ── AVAILABLE COACHES ──
-  if (freeCoaches.length) {
-    html += `<div class="coaches-section-title" style="margin-top:${busyCoaches.length ? "20px" : "0"}">
-      <div class="coaches-section-dot dot-free"></div>Available coaches
-      <span class="coaches-section-count">${freeCoaches.length}</span>
-    </div>`;
+  html += `<div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion('busy')">
+      <div class="accordion-header-left">
+        <div class="accordion-dot dot-busy"></div>
+        <span class="accordion-title">In session</span>
+        <span class="accordion-count">${busyCoaches.length}</span>
+      </div>
+      <span class="accordion-arrow ${accordionState.busy ? "open" : ""}" id="acc-arrow-busy">▼</span>
+    </div>
+    <div class="accordion-body ${accordionState.busy ? "open" : ""}" id="acc-body-busy">${busyBody}</div>
+  </div>`;
 
-    if (!openTopics.length) {
-      html += `<div class="coaches-no-topics">No open topics yet — participants can add them in "Add topic".</div>`;
-    } else {
-      // Show open topics as cards, each with a "Take it" button per coach
-      // Instead: show coaches as compact rows with dropdowns
-      freeCoaches.forEach(c => {
-        const opts = openTopics.map(t => {
-          const n = 1 + t.participants.length;
-          return `<option value="${t.id}">${esc(t.owner)}${n>1?" +"+(n-1)+" more":""}: ${esc(t.text.slice(0,50))}${t.text.length>50?"…":""}</option>`;
-        }).join("");
-        html += `<div class="coach-assign-block coach-free-row">
-          <div class="ca-top" style="margin-bottom:10px">
-            <div class="avatar av-free">${c.initials}</div>
-            <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status">Available</div></div>
-          </div>
-          <select class="wb-select" id="sel-${c.id}"><option value="">— select a topic —</option>${opts}</select>
-          <select class="wb-select" id="room-${c.id}">${roomOpts(c.id)}</select>
-          <select class="wb-select" id="delay-${c.id}">
-            <option value="0">Starts now</option>
-            <option value="10">Starts in 10 min</option>
-            <option value="20">Starts in 20 min</option>
-            <option value="30">Starts in 30 min</option>
-            <option value="45">Starts in 45 min</option>
-          </select>
-          <button class="btn-take" onclick="assignCoach('${c.id}',document.getElementById('sel-${c.id}').value,document.getElementById('room-${c.id}').value)">Take this topic</button>
-        </div>`;
-      });
-    }
+  // ── ACCORDION 2: TAKE A TOPIC ──
+  let freeBody = "";
+  if (!openTopics.length) {
+    freeBody = `<div class="coaches-no-topics">No open topics yet — participants can add them in "Add topic".</div>`;
+  } else if (!freeCoaches.length) {
+    freeBody = `<div class="coaches-no-topics">All coaches are currently in session.</div>`;
+  } else {
+    freeCoaches.forEach(c => {
+      const opts = openTopics.map(t => {
+        const n = 1 + t.participants.length;
+        return `<option value="${t.id}">${esc(t.owner)}${n>1?" +"+(n-1)+" more":""}: ${esc(t.text.slice(0,50))}${t.text.length>50?"…":""}</option>`;
+      }).join("");
+      freeBody += `<div class="coach-assign-block coach-free-row" style="margin-top:8px">
+        <div class="ca-top" style="margin-bottom:10px">
+          <div class="avatar av-free">${c.initials}</div>
+          <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status">Available</div></div>
+        </div>
+        <select class="wb-select" id="sel-${c.id}"><option value="">— select a topic —</option>${opts}</select>
+        <select class="wb-select" id="room-${c.id}">${roomOpts(c.id)}</select>
+        <select class="wb-select" id="delay-${c.id}">
+          <option value="0">Starts now</option>
+          <option value="10">Starts in 10 min</option>
+          <option value="20">Starts in 20 min</option>
+          <option value="30">Starts in 30 min</option>
+          <option value="45">Starts in 45 min</option>
+        </select>
+        <button class="btn-take" onclick="assignCoach('${c.id}',document.getElementById('sel-${c.id}').value,document.getElementById('room-${c.id}').value)">Take this topic</button>
+      </div>`;
+    });
   }
 
-  el.innerHTML = html || "";
+  html += `<div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion('free')">
+      <div class="accordion-header-left">
+        <div class="accordion-dot dot-free"></div>
+        <span class="accordion-title">Take a topic</span>
+        <span class="accordion-count">${freeCoaches.length} available</span>
+      </div>
+      <span class="accordion-arrow ${accordionState.free ? "open" : ""}" id="acc-arrow-free">▼</span>
+    </div>
+    <div class="accordion-body ${accordionState.free ? "open" : ""}" id="acc-body-free">${freeBody}</div>
+  </div>`;
+
+  el.innerHTML = html;
 
   // Restore selections
   COACHES.forEach(c => {
