@@ -100,8 +100,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .wb-input:focus { outline: 1.5px solid var(--wb-accent); outline-offset: 0; border-color: transparent; }
 .wb-textarea { width: 100%; padding: 10px 14px; background: var(--wb-surface2); border: 0.5px solid var(--wb-border2); border-radius: var(--radius); color: var(--wb-text); font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; display: block; margin-bottom: 12px; }
 .wb-textarea:focus { outline: 1.5px solid var(--wb-accent); outline-offset: 0; border-color: transparent; }
-.btn-accent { width: 100%; padding: 11px; background: var(--wb-accent); color: #0a0a0a; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: 0.01em; }
-.btn-accent:hover { background: #d4f84a; }
+.btn-accent { width: 100%; padding: 11px; background: var(--wb-accent); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: 0.01em; }
+.btn-accent:hover { background: #5b21b6; }
 
 .m-topic { background: var(--wb-dark); border: 0.5px solid var(--wb-border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; }
 .m-topic.matched { border-color: rgba(124,58,237,0.35); }
@@ -144,6 +144,75 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--wb-border2); border-radius: 2px; }
+
+/* Confirmation Modal */
+.confirm-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.confirm-overlay.show { display: flex; }
+.confirm-modal { background: #0d1225; border: 0.5px solid rgba(124,58,237,0.4); border-radius: 14px; padding: 24px; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.confirm-modal h3 { font-size: 16px; font-weight: 600; color: #f0f0ee; margin-bottom: 6px; }
+.confirm-modal p { font-size: 13px; color: #9a9aaa; margin-bottom: 16px; line-height: 1.5; }
+.confirm-detail { background: #1a2040; border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; }
+.confirm-detail-row { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.confirm-detail-row:last-child { margin-bottom: 0; }
+.confirm-detail-label { font-size: 11px; color: #4a4a60; text-transform: uppercase; letter-spacing: 0.05em; min-width: 50px; }
+.confirm-detail-value { font-size: 13px; color: #f0f0ee; font-weight: 500; }
+.confirm-btns { display: flex; gap: 10px; }
+.confirm-btns button { flex: 1; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; border: none; }
+.btn-confirm-yes { background: #7c3aed; color: white; }
+.btn-confirm-yes:hover { background: #5b21b6; }
+.btn-confirm-no { background: #1a2040; color: #9a9aaa; border: 0.5px solid rgba(255,255,255,0.1) !important; }
+.btn-confirm-no:hover { background: #222850; }
+
+@media (max-width: 600px) {
+  /* Header */
+  .header { padding: 10px 14px; gap: 8px; flex-wrap: nowrap; }
+  .logo-mark { font-size: 15px; }
+  .logo-divider { display: none; }
+  .logo-event { display: none; }
+  .view-toggle { flex: 1; justify-content: flex-end; }
+  .vt-btn { padding: 6px 10px; font-size: 11px; }
+
+  /* Stats bar - compact */
+  .stats-bar { padding: 8px 10px; gap: 4px; }
+  .stat { padding: 6px 8px; min-width: 0; flex: 1; }
+  .stat-n { font-size: 17px; }
+  .stat-l { font-size: 9px; letter-spacing: 0; }
+
+  /* Mobile layout */
+  .mobile-layout { padding: 14px 12px; }
+  .card { padding: 14px 12px; margin-bottom: 12px; }
+  .card-title { font-size: 11px; margin-bottom: 10px; }
+
+  /* Inputs */
+  .wb-input { padding: 9px 11px; font-size: 14px; margin-bottom: 10px; }
+  .wb-textarea { padding: 9px 11px; font-size: 14px; min-height: 72px; margin-bottom: 10px; }
+  .btn-accent { padding: 12px; font-size: 15px; }
+
+  /* Topic cards */
+  .m-topic { padding: 12px 12px; margin-bottom: 8px; }
+  .m-topic-owner { font-size: 11px; }
+  .m-topic-text { font-size: 14px; margin-bottom: 8px; }
+  .chips { gap: 4px; margin-bottom: 8px; }
+  .chip { font-size: 11px; padding: 3px 8px; }
+  .join-row { gap: 6px; margin-bottom: 8px; }
+  .join-input { font-size: 13px; padding: 8px 10px; }
+  .btn-join { font-size: 12px; padding: 8px 10px; }
+  .badge { font-size: 11px; padding: 3px 8px; }
+  .btn-ghost { font-size: 11px; }
+
+  /* Coach cards */
+  .coach-assign-block { padding: 12px; margin-bottom: 8px; }
+  .ca-top { margin-bottom: 8px; gap: 8px; }
+  .ca-name { font-size: 13px; }
+  .ca-status { font-size: 11px; }
+  .ca-session { font-size: 11px; margin-bottom: 6px; }
+  .avatar { width: 30px; height: 30px; font-size: 11px; }
+  .wb-select { padding: 8px 10px; font-size: 13px; margin-bottom: 6px; }
+  .btn-take, .btn-done { padding: 9px; font-size: 13px; }
+
+  /* Section sep */
+  .section-sep { font-size: 10px; margin: 14px 0 8px; }
+}
 </style>
 </head>
 <body>
@@ -210,6 +279,36 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
     <div class="card">
       <div class="card-title">Take a topic</div>
       <div id="m-coaches"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-modal">
+    <h3>Confirm session</h3>
+    <p>Please confirm you want to take this topic:</p>
+    <div class="confirm-detail">
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">Topic</span>
+        <span class="confirm-detail-value" id="confirm-topic-text">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">By</span>
+        <span class="confirm-detail-value" id="confirm-topic-owner">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">Room</span>
+        <span class="confirm-detail-value" id="confirm-room">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">Coach</span>
+        <span class="confirm-detail-value" id="confirm-coach">—</span>
+      </div>
+    </div>
+    <div class="confirm-btns">
+      <button class="btn-confirm-no" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-confirm-yes" id="confirm-yes-btn">Yes, take this topic</button>
     </div>
   </div>
 </div>
@@ -372,8 +471,10 @@ async function deleteTopic(tid) {
   await sbFetch('topics?id=eq.' + tid, 'DELETE');
 }
 
-async function assignCoach(coachId, topicId, room) {
-  if (!topicId) return;
+let pendingAssign = null;
+
+function assignCoach(coachId, topicId, room) {
+  if (!topicId) { alert("Please select a topic."); return; }
   if (!room) { alert("Please select a room for this session."); return; }
   const usedRooms = state.topics.filter(t => t.coachId && !t.done && t.room !== "Remote").map(t => t.room);
   if (room !== "Remote" && usedRooms.includes(room)) { alert("This room is already taken! Please choose another."); return; }
@@ -381,10 +482,34 @@ async function assignCoach(coachId, topicId, room) {
   if (cs.topicId) return;
   const t = state.topics.find(x => x.id === topicId);
   if (!t || t.coachId) return;
+  const coach = COACHES.find(c => c.id === coachId);
+  // Show confirmation modal
+  document.getElementById("confirm-topic-text").textContent = t.text.length > 80 ? t.text.slice(0,80) + "…" : t.text;
+  document.getElementById("confirm-topic-owner").textContent = t.owner + (t.participants.length ? " +" + t.participants.length + " more" : "");
+  document.getElementById("confirm-room").textContent = room;
+  document.getElementById("confirm-coach").textContent = coach ? coach.name : coachId;
+  pendingAssign = { coachId, topicId, room };
+  document.getElementById("confirm-overlay").classList.add("show");
+}
+
+async function confirmAssign() {
+  if (!pendingAssign) return;
+  closeConfirm();
+  const { coachId, topicId, room } = pendingAssign;
+  pendingAssign = null;
+  const cs = state.coaches[coachId];
+  const t = state.topics.find(x => x.id === topicId);
+  if (!t || !cs) return;
   t.coachId = coachId; t.room = room; cs.topicId = topicId;
   render();
   await Promise.all([saveTopic(t), saveCoach(coachId)]);
 }
+
+function closeConfirm() {
+  document.getElementById("confirm-overlay").classList.remove("show");
+  pendingAssign = null;
+}
+document.getElementById("confirm-yes-btn").addEventListener("click", confirmAssign);
 
 async function freeCoach(coachId) {
   const cs = state.coaches[coachId];
