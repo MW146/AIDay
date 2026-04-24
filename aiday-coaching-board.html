@@ -1082,6 +1082,20 @@ function roundUpTo5(date) {
   return rounded;
 }
 
+function isHybrid(t) {
+  const hasRemote = t.ownerPresence === "remote" ||
+    Object.values(t.participantPresence || {}).some(p => p === "remote");
+  return hasRemote && t.room && t.room !== "Remote only";
+}
+
+function roundUpToFive(iso) {
+  const d = new Date(iso);
+  const mins = d.getMinutes();
+  const rounded = Math.ceil(mins / 5) * 5;
+  d.setMinutes(rounded, 0, 0);
+  return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+}
+
 function formatStartTime(iso) {
   const d = new Date(iso);
   const now = new Date();
