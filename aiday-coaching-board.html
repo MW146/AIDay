@@ -40,6 +40,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .header-right { display: flex; align-items: center; gap: 12px; }
 .time-pill { font-size: 12px; color: var(--wb-text2); background: var(--wb-surface); padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--wb-border); }
 .view-toggle { display: flex; background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius); overflow: hidden; }
+.btn-add-plus { background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius); color: var(--wb-text3); font-size: 20px; font-weight: 300; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; line-height: 1; padding: 0; transition: background 0.12s, color 0.12s; }
+.btn-add-plus:hover { background: var(--wb-surface2); color: var(--wb-text2); }
+.btn-add-plus.active { background: var(--wb-surface2); color: var(--wb-text); }
 .vt-btn { padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--wb-text2); font-family: inherit; transition: background 0.12s; }
 .vt-btn.active { background: var(--wb-surface2); color: var(--wb-text); }
 
@@ -260,15 +263,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 }
 
 /* TV Board – two columns */
-.tv-board { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--wb-border); min-height: calc(100vh - 120px); }
+.tv-board { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--wb-border); min-height: calc(100vh - 120px); }
+.tv-board-3 { grid-template-columns: 1fr 1fr 1fr; }
+.badge-soon { background: rgba(245,158,11,0.15); color: #fbbf24; border: 0.5px solid rgba(245,158,11,0.3); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+.tv-topic.starting-soon { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.05); }
 .tv-col { background: var(--wb-dark); padding: 20px 24px; overflow-y: auto; }
 .tv-col-header { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--wb-text3); margin-bottom: 16px; }
 .tv-col-header::after { content: ""; flex: 1; height: 0.5px; background: var(--wb-border); }
 .tv-col-count { background: var(--wb-surface2); color: var(--wb-text2); font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-left: 4px; }
 .tv-col-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-soon { background: #f59e0b; }
+.badge-soon { background: rgba(245,158,11,0.15); color: #fbbf24; border: 0.5px solid rgba(245,158,11,0.3); font-size: 11px; padding: 3px 10px; border-radius: 20px; }
 
 /* TV topic card – in session gets stronger styling */
 .tv-topic.in-session { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.07); }
+.tv-topic.starting-soon { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.06); }
 .tv-topic.in-session .tv-topic-text { color: var(--wb-text); }
 
 /* Confetti */
@@ -351,6 +360,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .accordion-arrow.open { transform: rotate(180deg); }
 .accordion-body { display: none; padding: 0 12px 12px; }
 .accordion-body.open { display: block; }
+
+/* Presence toggle */
+.presence-toggle { padding: 0 12px; height: 42px; display: flex; align-items: center; background: var(--wb-surface2); border: 0.5px solid var(--wb-border2); border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--wb-text2); white-space: nowrap; user-select: none; transition: background 0.12s, color 0.12s, border-color 0.12s; }
+.presence-toggle.remote { background: rgba(45,212,160,0.12); border-color: rgba(45,212,160,0.35); color: #6ee7b7; }
+.presence-toggle-sm { padding: 0 10px; height: 36px; font-size: 12px; }
+.chip-remote { background: rgba(45,212,160,0.12); color: #6ee7b7; border: 0.5px solid rgba(45,212,160,0.3); }
+.badge-hybrid { background: rgba(251,146,60,0.12); color: #fb923c; border: 0.5px solid rgba(251,146,60,0.3); font-size: 11px; padding: 3px 10px; border-radius: 20px; }
 </style>
 </head>
 <body>
@@ -364,8 +380,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
   <div class="header-right">
     <div class="view-toggle">
       <button class="vt-btn active" id="btn-tv" onclick="switchView('tv')">Session overview</button>
-      <button class="vt-btn" id="btn-mobile" onclick="switchView('mobile')">Add topic</button><button class="vt-btn" id="btn-coach" onclick="switchView('coach')">Coaches</button>
+      <button class="vt-btn" id="btn-coach" onclick="switchView('coach')">Coaches</button>
     </div>
+    <button class="vt-btn btn-add-plus" id="btn-mobile" onclick="switchView('mobile')" title="Add topic">+</button>
   </div>
 </div>
 
@@ -373,7 +390,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 
 <!-- TV VIEW -->
 <div id="view-tv" class="active">
-  <div class="tv-board">
+  <div class="tv-board tv-board-3">
     <div class="tv-col">
       <div class="tv-col-header">
         <div class="tv-col-dot dot-busy"></div>
@@ -381,6 +398,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
         <span class="tv-col-count" id="tv-s-session">0</span>
       </div>
       <div id="tv-topics-session"></div>
+    </div>
+    <div class="tv-col">
+      <div class="tv-col-header">
+        <div class="tv-col-dot" style="background:#f59e0b"></div>
+        Starting soon
+        <span class="tv-col-count" id="tv-s-soon">0</span>
+      </div>
+      <div id="tv-topics-soon"></div>
     </div>
     <div class="tv-col">
       <div class="tv-col-header">
@@ -570,7 +595,9 @@ async function loadFromSupabase() {
     coachId: t.coach_id,
     room: t.room,
     done: t.done,
-    startTime: t.start_time || null
+    startTime: t.start_time || null,
+    ownerPresence: t.owner_presence || "onsite",
+    participantPresence: t.participant_presence || {}
   }));
   COACHES.forEach(c => {
     const cs = (coaches || []).find(x => x.coach_id === c.id);
@@ -588,7 +615,9 @@ async function saveTopic(t) {
     owner: t.owner, participants: t.participants,
     text: t.text, coach_id: t.coachId || null,
     room: t.room || null, done: t.done,
-    start_time: t.startTime || null
+    start_time: t.startTime || null,
+    owner_presence: t.ownerPresence || "onsite",
+    participant_presence: t.participantPresence || {}
   });
   // If not found, insert
   if (res && res.status === 404) {
@@ -635,7 +664,7 @@ const ROOMS = [
   "Big Engineering Office (Robotics, Infra, CSI Area) 1",
   "Big Engineering Office (Robotics, Infra, CSI Area) 2",
   "Operations Area",
-  "Remote",
+  "Remote only",
 ];
 let state = { topics: [], coaches: {} };
 COACHES.forEach(c => { state.coaches[c.id] = { topicId: null, sessionsDone: 0 }; });
@@ -664,10 +693,16 @@ async function addTopic() {
   const name = document.getElementById("inp-name").value.trim();
   const text = document.getElementById("inp-topic").value.trim();
   if (!name || !text) { alert("Please enter your name and describe your topic."); return; }
-  const t = { id: uid(), owner: name, participants: [], text, coachId: null, room: null, done: false, startTime: null };
+  const ownerPresence = addPresence;
+  const t = { id: uid(), owner: name, ownerPresence, participants: [], participantPresence: {}, text, coachId: null, room: null, done: false, startTime: null };
   state.topics.unshift(t);
   document.getElementById("inp-name").value = "";
   document.getElementById("inp-topic").value = "";
+  addPresence = "onsite";
+  const tog = document.getElementById("presence-toggle");
+  const lbl = document.getElementById("presence-label");
+  if (tog) tog.classList.remove("remote");
+  if (lbl) lbl.textContent = "Onsite";
   render();
   try {
     await sbFetch('topics', 'POST', {
@@ -684,7 +719,10 @@ async function joinTopic(tid) {
   const t = state.topics.find(x => x.id === tid);
   if (!t) return;
   if (t.owner === name || t.participants.includes(name)) { alert("You're already listed on this topic!"); return; }
+  const presence = joinPresence[tid] || "onsite";
   t.participants.push(name);
+  if (!t.participantPresence) t.participantPresence = {};
+  t.participantPresence[name] = presence;
   inp.value = "";
   render();
   await saveTopic(t);
@@ -707,8 +745,8 @@ let pendingAssign = null;
 function assignCoach(coachId, topicId, room) {
   if (!topicId) { alert("Please select a topic."); return; }
   if (!room) { alert("Please select a room for this session."); return; }
-  const usedRooms = state.topics.filter(t => t.coachId && !t.done && t.room !== "Remote").map(t => t.room);
-  if (room !== "Remote" && usedRooms.includes(room)) { alert("This room is already taken! Please choose another."); return; }
+  const usedRooms = state.topics.filter(t => t.coachId && !t.done && t.room !== "Remote only").map(t => t.room);
+  if (room !== "Remote only" && usedRooms.includes(room)) { alert("This room is already taken! Please choose another."); return; }
   const cs = state.coaches[coachId];
   if (cs.topicId) return;
   const t = state.topics.find(x => x.id === topicId);
@@ -919,11 +957,11 @@ function renderTvTopics() {
     return `<div class="tv-topic in-session">
       <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
       <div class="tv-topic-text">${esc(t.text)}</div>
-      ${chipsHtml(t.owner, t.participants)}
+      ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
       <div class="tv-topic-footer">
         ${coach ? `<span class="badge badge-coach">With ${esc(coach.name)}</span>` : ""}
-        ${t.room && t.room !== "Remote" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}
-        ${t.room === "Remote" ? `<span class="badge badge-remote">Remote</span>` : ""}
+        ${t.room && t.room !== "Remote only" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}
+        ${t.room === "Remote only" ? `<span class="badge badge-remote">Remote only</span>` : ""}
       </div>
     </div>`;
   }).join("") : '<div class="empty-state">No sessions running yet.</div>';
@@ -933,7 +971,7 @@ function renderTvTopics() {
     return `<div class="tv-topic">
       <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
       <div class="tv-topic-text">${esc(t.text)}</div>
-      ${chipsHtml(t.owner, t.participants)}
+      ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
       <div class="tv-topic-footer">
         <span class="badge badge-open">Waiting for coach</span>
       </div>
@@ -956,7 +994,7 @@ function renderTvCoaches() {
         <div class="coach-info">
           <div class="coach-name">${esc(c.name)}</div>
           ${t ? `<div class="coach-session">${esc(t.text.slice(0,60))}${t.text.length>60?"…":""}</div>` : ""}
-        ${t && t.room && t.room !== "Remote" ? `<div style="font-size:11px;color:#a78bfa;margin-top:2px">${esc(t.room)}</div>` : ""}${t && t.room === "Remote" ? `<div style="font-size:11px;color:#6ee7b7;margin-top:2px">Remote</div>` : ""}
+        ${t && t.room && t.room !== "Remote only" ? `<div style="font-size:11px;color:#a78bfa;margin-top:2px">${esc(t.room)}</div>` : ""}${t && t.room === "Remote only" ? `<div style="font-size:11px;color:#6ee7b7;margin-top:2px">Remote</div>` : ""}
           ${people.length ? `<div class="coach-people">${people.map(p=>`<span class="chip chip-joined" style="font-size:10px">${esc(p)}</span>`).join("")}</div>` : ""}
         </div>
         <div class="dot dot-busy"></div>
@@ -989,15 +1027,18 @@ function renderMobileTopics() {
     html += `<div class="m-topic ${coach?"matched":""}">
       <div class="m-topic-owner">Added by ${esc(t.owner)}</div>
       <div class="m-topic-text">${esc(t.text)}</div>
-      ${chipsHtml(t.owner, t.participants)}
+      ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
       ${!coach ? `<div class="join-row">
         <input class="join-input" id="join-${t.id}" placeholder="Your name to join…" maxlength="60"
           onkeydown="if(event.key==='Enter')joinTopic('${t.id}')"/>
+        <div class="presence-toggle presence-toggle-sm" id="join-presence-${t.id}" onclick="toggleJoinPresence('${t.id}')">
+          <span id="join-presence-label-${t.id}">Onsite</span>
+        </div>
         <button class="btn-join" onclick="joinTopic('${t.id}')">+ Join</button>
       </div>` : ""}
       <div class="m-topic-footer">
         ${coach ? `<span class="badge badge-coach">With ${esc(coach.name)}</span>` : `<span class="badge badge-open">Waiting for coach</span>`}
-        ${t.room && t.room !== "Remote" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}${t.room === "Remote" ? `<span class="badge badge-remote">Remote</span>` : ""}
+        ${t.room && t.room !== "Remote only" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}${t.room === "Remote only" ? `<span class="badge badge-remote">Remote only</span>` : ""}
         <button class="btn-ghost" onclick="deleteTopic('${t.id}')">remove</button>
       </div>
     </div>`;
@@ -1008,7 +1049,7 @@ function renderMobileTopics() {
       html += `<div class="m-topic done" style="opacity:.4">
         <div class="m-topic-owner">Added by ${esc(t.owner)}</div>
         <div class="m-topic-text">${esc(t.text)}</div>
-        ${chipsHtml(t.owner, t.participants)}
+        ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
         <div class="m-topic-footer"><span style="font-size:11px;color:var(--wb-text3)">Done</span>
         <button class="btn-ghost" onclick="deleteTopic('${t.id}')">remove</button></div>
       </div>`;
@@ -1017,19 +1058,53 @@ function renderMobileTopics() {
   el.innerHTML = html;
 }
 
+function roundUpTo5(date) {
+  const ms = date.getTime();
+  const mins = date.getMinutes();
+  const remainder = mins % 5;
+  const rounded = remainder === 0 ? date : new Date(ms + (5 - remainder) * 60000);
+  rounded.setSeconds(0, 0);
+  return rounded;
+}
+
 function formatStartTime(iso) {
   const d = new Date(iso);
   const now = new Date();
-  const diff = Math.round((d - now) / 60000);
-  const timeStr = d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-  if (diff <= 1) return "Started ~" + timeStr;
-  return "Starts ~" + timeStr + " (in " + diff + " min)";
+  const diff = (d - now) / 60000;
+  const rounded = roundUpTo5(d);
+  const timeStr = rounded.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  if (diff <= 1) return null; // already started
+  return timeStr;
+}
+
+function isStartingSoon(iso) {
+  if (!iso) return false;
+  const d = new Date(iso);
+  const diff = (d - new Date()) / 60000;
+  return diff > 1;
+}
+
+let addPresence = "onsite";
+function togglePresence() {
+  addPresence = addPresence === "onsite" ? "remote" : "onsite";
+  const el = document.getElementById("presence-toggle");
+  const lbl = document.getElementById("presence-label");
+  if (el) el.classList.toggle("remote", addPresence === "remote");
+  if (lbl) lbl.textContent = addPresence === "onsite" ? "Onsite" : "Remote";
+}
+const joinPresence = {};
+function toggleJoinPresence(tid) {
+  joinPresence[tid] = joinPresence[tid] === "remote" ? "onsite" : "remote";
+  const el = document.getElementById("join-presence-" + tid);
+  const lbl = document.getElementById("join-presence-label-" + tid);
+  if (el) el.classList.toggle("remote", joinPresence[tid] === "remote");
+  if (lbl) lbl.textContent = joinPresence[tid] === "remote" ? "Remote" : "Onsite";
 }
 function roomOpts(coachId) {
-  const usedRooms = state.topics.filter(t => t.coachId && !t.done && t.room !== "Remote").map(t => t.room);
+  const usedRooms = state.topics.filter(t => t.coachId && !t.done && t.room !== "Remote only").map(t => t.room);
   const opts = ROOMS.map(r => {
-    const taken = r !== "Remote" && usedRooms.includes(r);
-    return `<option value="${esc(r)}" ${taken ? "disabled" : ""}>${r === "Remote" ? "Remote (online)" : esc(r)}${taken ? " (occupied)" : ""}</option>`;
+    const taken = r !== "Remote only" && usedRooms.includes(r);
+    return `<option value="${esc(r)}" ${taken ? "disabled" : ""}>${esc(r)}${taken ? " (occupied)" : ""}</option>`;
   }).join("");
   return `<option value="">— select a room —</option>${opts}`;
 }
@@ -1077,7 +1152,7 @@ function renderMobileCoaches() {
         <div class="ca-top">
           <div class="avatar av-busy">${c.initials}</div>
           <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status busy">In session</div></div>
-          ${t && t.room ? `<span class="badge ${t.room === "Remote" ? "badge-remote" : "badge-room"} ca-room-badge">${esc(t.room)}</span>` : ""}
+          ${t && t.room ? `<span class="badge ${t.room === "Remote only" ? "badge-remote" : "badge-room"} ca-room-badge">${esc(t.room)}</span>` : ""}
         </div>
         ${t ? `<div class="ca-session">"${esc(t.text.slice(0,90))}${t.text.length>90?"…":""}"</div>` : ""}
         ${people.length ? `<div class="chips" style="margin-bottom:10px">${people.map(p=>`<span class="chip chip-joined">${esc(p)}</span>`).join("")}</div>` : ""}
@@ -1157,6 +1232,7 @@ function renderMobileCoaches() {
 
 loadFromSupabase();
 setInterval(() => { loadFromSupabase(); }, 8000);
+setInterval(() => { if(currentView === "tv") renderTvTopics(); }, 30000);
 </script>
 </body>
 </html>
