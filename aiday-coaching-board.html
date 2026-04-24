@@ -652,11 +652,17 @@ async function saveCoach(coachId) {
   }
 }
 
+const CACHE_VERSION = "v2";
+if (localStorage.getItem("aiday_version") !== CACHE_VERSION) {
+  localStorage.removeItem("aiday_wb");
+  localStorage.setItem("aiday_version", CACHE_VERSION);
+}
+
 const ROOMS = [
-  "Projector Room",
-  "Seaview",
+  "Projector Room 🌐",
+  "Seaview 🌐",
   "Community Room",
-  "Skydeck",
+  "Skydeck 🌐",
   "UFO",
   "Crazy Cube",
   "Lunch Area",
