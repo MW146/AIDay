@@ -931,11 +931,14 @@ function renderFilterPanel() {
   el.innerHTML = html;
 }
 
-function chipsHtml(owner, participants) {
-  return `<div class="chips">
-    <span class="chip chip-owner">${esc(owner)}</span>
-    ${participants.map(p=>`<span class="chip chip-joined">${esc(p)}</span>`).join("")}
-  </div>`;
+function chipsHtml(owner, participants, ownerPresence, participantPresence) {
+  const op = ownerPresence === "remote";
+  const ownerChip = `<span class="chip chip-owner ${op ? "chip-remote" : ""}">${esc(owner)}${op ? " 🌐" : ""}</span>`;
+  const pChips = (participants||[]).map(p => {
+    const rp = participantPresence && participantPresence[p] === "remote";
+    return `<span class="chip chip-joined ${rp ? "chip-remote" : ""}">${esc(p)}${rp ? " 🌐" : ""}</span>`;
+  }).join("");
+  return `<div class="chips">${ownerChip}${pChips}</div>`;
 }
 
 function renderTvTopics() {
