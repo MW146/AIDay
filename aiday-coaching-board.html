@@ -329,6 +329,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .celebration-emoji { font-size: 48px; margin-bottom: 8px; }
 .celebration-text { font-size: 20px; font-weight: 700; color: #f0f0ee; }
 .celebration-sub { font-size: 13px; color: #9a9aaa; margin-top: 4px; }
+
+.coaches-section-title { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--wb-text3); margin-bottom: 10px; }
+.coaches-section-title::after { content: ""; flex: 1; height: 0.5px; background: var(--wb-border); }
+.coaches-section-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.coaches-section-count { background: var(--wb-surface2); color: var(--wb-text2); font-size: 10px; padding: 1px 7px; border-radius: 20px; }
+.ca-room-badge { margin-left: auto; }
+.coaches-no-topics { font-size: 13px; color: var(--wb-text3); padding: 12px 0; text-align: center; }
+.coach-free-row { margin-bottom: 8px; }
+.badge-time { background: rgba(255,255,255,0.06); color: #9a9aaa; border: 0.5px solid rgba(255,255,255,0.1); font-size: 11px; padding: 3px 10px; border-radius: 20px; }
 </style>
 </head>
 <body>
@@ -347,12 +356,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
   </div>
 </div>
 
-<div class="stats-bar">
-  <div class="stat" id="filter-open" onclick="setFilter('open')"><div class="stat-n" id="s-open">0</div><div class="stat-l">Open topics</div></div>
-  <div class="stat" id="filter-session" onclick="setFilter('session')"><div class="stat-n teal" id="s-session">0</div><div class="stat-l">In session</div></div>
-  <div class="stat" id="filter-free" onclick="setFilter('free')"><div class="stat-n" id="s-free">16</div><div class="stat-l">Coaches free</div></div>
-  <div class="stat" id="filter-done" onclick="setFilter('done')"><div class="stat-n" id="s-done">0</div><div class="stat-l">Done</div></div>
-</div>
+
 
 <!-- TV VIEW -->
 <div id="view-tv" class="active">
@@ -431,6 +435,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
       <div class="confirm-detail-row">
         <span class="confirm-detail-label">Coach</span>
         <span class="confirm-detail-value" id="confirm-coach">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">Starts</span>
+        <span class="confirm-detail-value" id="confirm-start">—</span>
       </div>
     </div>
     <div class="confirm-btns">
@@ -550,7 +558,8 @@ async function loadFromSupabase() {
     text: t.text,
     coachId: t.coach_id,
     room: t.room,
-    done: t.done
+    done: t.done,
+    startTime: t.start_time || null
   }));
   COACHES.forEach(c => {
     const cs = (coaches || []).find(x => x.coach_id === c.id);
@@ -565,7 +574,8 @@ async function loadFromSupabase() {
 async function saveTopic(t) {
   await sbFetch('topics', 'POST', {
     id: t.id, owner: t.owner, participants: t.participants,
-    text: t.text, coach_id: t.coachId, room: t.room, done: t.done
+    text: t.text, coach_id: t.coachId, room: t.room, done: t.done,
+    start_time: t.startTime || null
   });
 }
 
@@ -610,11 +620,7 @@ function switchView(v) {
   document.getElementById("btn-tv").classList.toggle("active", v === "tv");
   document.getElementById("btn-mobile").classList.toggle("active", v === "mobile");
   document.getElementById("btn-coach").classList.toggle("active", v === "coach");
-  // Hide stats bar and filter panel on TV view
-  const showStats = v !== "tv";
-  document.querySelector(".stats-bar").style.display = showStats ? "" : "none";
-  document.getElementById("filter-panel").style.display = "none";
-  if (!showStats) setFilter(null);
+
   render();
 }
 
@@ -673,24 +679,33 @@ function assignCoach(coachId, topicId, room) {
   const t = state.topics.find(x => x.id === topicId);
   if (!t || t.coachId) return;
   const coach = COACHES.find(c => c.id === coachId);
-  // Show confirmation modal
+  const delayEl = document.getElementById("delay-" + coachId);
+  const startDelay = delayEl ? parseInt(delayEl.value) : 0;
+  // Calculate display time
+  const startTime = new Date(Date.now() + startDelay * 60000);
+  const timeStr = startDelay === 0 ? "Now" : startTime.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) + " (in " + startDelay + " min)";
   document.getElementById("confirm-topic-text").textContent = t.text.length > 80 ? t.text.slice(0,80) + "…" : t.text;
   document.getElementById("confirm-topic-owner").textContent = t.owner + (t.participants.length ? " +" + t.participants.length + " more" : "");
   document.getElementById("confirm-room").textContent = room;
   document.getElementById("confirm-coach").textContent = coach ? coach.name : coachId;
-  pendingAssign = { coachId, topicId, room };
+  document.getElementById("confirm-start").textContent = timeStr;
+  pendingAssign = { coachId, topicId, room, startDelay };
   document.getElementById("confirm-overlay").classList.add("show");
 }
 
 async function confirmAssign() {
   if (!pendingAssign) return;
   closeConfirm();
-  const { coachId, topicId, room } = pendingAssign;
+  const { coachId, topicId, room, startDelay } = pendingAssign;
   pendingAssign = null;
   const cs = state.coaches[coachId];
   const t = state.topics.find(x => x.id === topicId);
   if (!t || !cs) return;
-  t.coachId = coachId; t.room = room; cs.topicId = topicId;
+  // Calculate start time
+  const startTime = startDelay > 0
+    ? new Date(Date.now() + startDelay * 60000)
+    : new Date();
+  t.coachId = coachId; t.room = room; t.startTime = startTime.toISOString(); cs.topicId = topicId;
   render();
   await Promise.all([saveTopic(t), saveCoach(coachId)]);
 }
@@ -763,7 +778,6 @@ async function freeCoach(coachId) {
 }
 
 function render() {
-  renderStats();
   if (currentView === "tv") { renderTvTopics(); renderTvCoaches(); }
   else if (currentView === "mobile") { renderMobileTopics(); }
   else if (currentView === "coach") { renderMobileCoaches(); }
@@ -838,15 +852,6 @@ function renderFilterPanel() {
     });
   }
   el.innerHTML = html;
-}
-
-function renderStats() {
-  const active = state.topics.filter(t => !t.done);
-  document.getElementById("s-open").textContent = active.filter(t => !t.coachId).length;
-  document.getElementById("s-session").textContent = active.filter(t => t.coachId).length;
-  document.getElementById("s-free").textContent = COACHES.filter(c => !state.coaches[c.id].topicId).length;
-  document.getElementById("s-done").textContent = state.topics.filter(t => t.done).length;
-  if (activeFilter) renderFilterPanel();
 }
 
 function chipsHtml(owner, participants) {
@@ -973,6 +978,14 @@ function renderMobileTopics() {
   el.innerHTML = html;
 }
 
+function formatStartTime(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = Math.round((d - now) / 60000);
+  const timeStr = d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  if (diff <= 1) return "Started ~" + timeStr;
+  return "Starts ~" + timeStr + " (in " + diff + " min)";
+}
 function roomOpts(coachId) {
   const usedRooms = state.topics.filter(t => t.coachId && !t.done && t.room !== "Remote").map(t => t.room);
   const opts = ROOMS.map(r => {
@@ -983,7 +996,7 @@ function roomOpts(coachId) {
 }
 
 function renderMobileCoaches() {
-  // Save current dropdown selections before re-render
+  // Save dropdown selections
   const savedSelections = {};
   COACHES.forEach(c => {
     const topicSel = document.getElementById("sel-" + c.id);
@@ -995,44 +1008,81 @@ function renderMobileCoaches() {
       };
     }
   });
+
   const el = document.getElementById("m-coaches");
   const openTopics = state.topics.filter(t => !t.coachId && !t.done);
+  const busyCoaches = COACHES.filter(c => state.coaches[c.id].topicId);
+  const freeCoaches = COACHES.filter(c => !state.coaches[c.id].topicId);
+
   let html = "";
-  COACHES.forEach(c => {
-    const cs = state.coaches[c.id];
-    const t = cs.topicId ? state.topics.find(x => x.id === cs.topicId) : null;
-    const people = t ? [t.owner, ...t.participants] : [];
-    if (cs.topicId) {
+
+  // ── MY SESSION (if I'm in one) ──
+  // Show busy coaches first as a prominent section
+  if (busyCoaches.length) {
+    html += `<div class="coaches-section-title">
+      <div class="coaches-section-dot dot-busy"></div>In session
+      <span class="coaches-section-count">${busyCoaches.length}</span>
+    </div>`;
+    busyCoaches.forEach(c => {
+      const cs = state.coaches[c.id];
+      const t = cs.topicId ? state.topics.find(x => x.id === cs.topicId) : null;
+      const people = t ? [t.owner, ...t.participants] : [];
       html += `<div class="coach-assign-block busy-block">
         <div class="ca-top">
           <div class="avatar av-busy">${c.initials}</div>
-          <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status busy">In session</div></div>
+          <div>
+            <div class="ca-name">${esc(c.name)}</div>
+            <div class="ca-status busy">In session</div>
+          </div>
+          ${t && t.room ? `<span class="badge ${t.room === "Remote" ? "badge-remote" : "badge-room"} ca-room-badge">${esc(t.room)}</span>` : ""}
         </div>
-        ${t ? `<div class="ca-session">"${esc(t.text.slice(0,70))}${t.text.length>70?"…":""}"</div>` : ""}
+        ${t ? `<div class="ca-session">"${esc(t.text.slice(0,90))}${t.text.length>90?"…":""}"</div>` : ""}
         ${people.length ? `<div class="chips" style="margin-bottom:10px">${people.map(p=>`<span class="chip chip-joined">${esc(p)}</span>`).join("")}</div>` : ""}
-        <button class="btn-done" onclick="freeCoach('${c.id}')">Mark session as done</button>
+        <button class="btn-done" onclick="freeCoach('${c.id}')">✓ Mark session as done</button>
       </div>`;
+    });
+  }
+
+  // ── AVAILABLE COACHES ──
+  if (freeCoaches.length) {
+    html += `<div class="coaches-section-title" style="margin-top:${busyCoaches.length ? "20px" : "0"}">
+      <div class="coaches-section-dot dot-free"></div>Available coaches
+      <span class="coaches-section-count">${freeCoaches.length}</span>
+    </div>`;
+
+    if (!openTopics.length) {
+      html += `<div class="coaches-no-topics">No open topics yet — participants can add them in "Add topic".</div>`;
     } else {
-      const opts = openTopics.map(t => {
-        const n = 1 + t.participants.length;
-        return `<option value="${t.id}">${esc(t.owner)}${n>1?" +"+(n-1)+" more":""}: ${esc(t.text.slice(0,45))}${t.text.length>45?"…":""}</option>`;
-      }).join("");
-      html += `<div class="coach-assign-block">
-        <div class="ca-top">
-          <div class="avatar av-free">${c.initials}</div>
-          <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status">Available</div></div>
-        </div>
-        ${openTopics.length
-          ? `<select class="wb-select" id="sel-${c.id}"><option value="">— select a topic —</option>${opts}</select>
-             <select class="wb-select" id="room-${c.id}">${roomOpts(c.id)}</select>
-             <button class="btn-take" onclick="assignCoach('${c.id}',document.getElementById('sel-${c.id}').value,document.getElementById('room-${c.id}').value)">Take this topic</button>`
-          : `<div style="font-size:12px;color:var(--wb-text3)">No open topics yet</div>`}
-      </div>`;
+      // Show open topics as cards, each with a "Take it" button per coach
+      // Instead: show coaches as compact rows with dropdowns
+      freeCoaches.forEach(c => {
+        const opts = openTopics.map(t => {
+          const n = 1 + t.participants.length;
+          return `<option value="${t.id}">${esc(t.owner)}${n>1?" +"+(n-1)+" more":""}: ${esc(t.text.slice(0,50))}${t.text.length>50?"…":""}</option>`;
+        }).join("");
+        html += `<div class="coach-assign-block coach-free-row">
+          <div class="ca-top" style="margin-bottom:10px">
+            <div class="avatar av-free">${c.initials}</div>
+            <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status">Available</div></div>
+          </div>
+          <select class="wb-select" id="sel-${c.id}"><option value="">— select a topic —</option>${opts}</select>
+          <select class="wb-select" id="room-${c.id}">${roomOpts(c.id)}</select>
+          <select class="wb-select" id="delay-${c.id}">
+            <option value="0">Starts now</option>
+            <option value="10">Starts in 10 min</option>
+            <option value="20">Starts in 20 min</option>
+            <option value="30">Starts in 30 min</option>
+            <option value="45">Starts in 45 min</option>
+          </select>
+          <button class="btn-take" onclick="assignCoach('${c.id}',document.getElementById('sel-${c.id}').value,document.getElementById('room-${c.id}').value)">Take this topic</button>
+        </div>`;
+      });
     }
-  });
+  }
+
   el.innerHTML = html || "";
 
-  // Restore dropdown selections after re-render
+  // Restore selections
   COACHES.forEach(c => {
     if (savedSelections[c.id]) {
       const topicSel = document.getElementById("sel-" + c.id);
@@ -1043,8 +1093,7 @@ function renderMobileCoaches() {
   });
 }
 
-// Hide stats bar on initial TV view
-document.querySelector(".stats-bar").style.display = "none";
+
 loadFromSupabase();
 setInterval(() => { loadFromSupabase(); }, 8000);
 </script>
