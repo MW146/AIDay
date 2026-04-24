@@ -362,7 +362,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .accordion-body.open { display: block; }
 
 /* Presence toggle */
-.presence-toggle { padding: 0 12px; height: 42px; display: flex; align-items: center; background: var(--wb-surface2); border: 0.5px solid var(--wb-border2); border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--wb-text2); white-space: nowrap; user-select: none; transition: background 0.12s, color 0.12s, border-color 0.12s; }
+.presence-toggle { padding: 0 14px; height: 44px; display: flex; align-items: center; background: var(--wb-surface2); border: 0.5px solid var(--wb-border2); border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--wb-text2); white-space: nowrap; user-select: none; transition: background 0.12s, color 0.12s, border-color 0.12s; flex-shrink: 0; }
 .presence-toggle.remote { background: rgba(45,212,160,0.12); border-color: rgba(45,212,160,0.35); color: #6ee7b7; }
 .presence-toggle-sm { padding: 0 10px; height: 36px; font-size: 12px; }
 .chip-remote { background: rgba(45,212,160,0.12); color: #6ee7b7; border: 0.5px solid rgba(45,212,160,0.3); }
@@ -425,7 +425,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
     <div class="card">
       <div class="card-title">Add your topic</div>
       <div class="field-label">Your name</div>
-      <input class="wb-input" id="inp-name" placeholder="e.g. Max Mustermann" maxlength="60" />
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input class="wb-input" id="inp-name" placeholder="e.g. Max Mustermann" maxlength="60" style="margin-bottom:0;flex:1" />
+        <div class="presence-toggle" id="presence-toggle" onclick="togglePresence()">
+          <span id="presence-label">Onsite</span>
+        </div>
+      </div>
       <div class="field-label">What do you need help with?</div>
       <textarea class="wb-textarea" id="inp-topic" placeholder="Describe the use case or challenge you'd like to work on…" maxlength="300"></textarea>
       <button class="btn-accent" onclick="addTopic()">Add topic</button>
