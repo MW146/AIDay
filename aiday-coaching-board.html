@@ -730,13 +730,12 @@ function assignCoach(coachId, topicId, room) {
 
 async function confirmAssign() {
   if (!pendingAssign) return;
-  closeConfirm();
   const { coachId, topicId, room, startDelay } = pendingAssign;
   pendingAssign = null;
+  document.getElementById("confirm-overlay").classList.remove("show");
   const cs = state.coaches[coachId];
   const t = state.topics.find(x => x.id === topicId);
   if (!t || !cs) return;
-  // Calculate start time
   const startTime = new Date(Date.now() + (startDelay || 0) * 60000);
   t.coachId = coachId;
   t.room = room;
