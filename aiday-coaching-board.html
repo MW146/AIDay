@@ -213,6 +213,61 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
   /* Section sep */
   .section-sep { font-size: 10px; margin: 14px 0 8px; }
 }
+
+/* Clickable stats / filter */
+.stat { cursor: pointer; transition: background 0.12s, border-color 0.12s; border: 0.5px solid transparent; border-radius: var(--radius); }
+.stat:hover { background: #1a2040; }
+.stat.active { border-color: rgba(124,58,237,0.5); background: rgba(124,58,237,0.1); }
+.stat.active .stat-l { color: #a78bfa; }
+
+/* Filter panel overlay */
+.filter-panel { display: none; background: #0d1225; border-bottom: 0.5px solid rgba(124,58,237,0.25); padding: 16px 24px; }
+.filter-panel.show { display: block; }
+.filter-panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #4a4a60; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.filter-close { font-size: 12px; color: #4a4a60; cursor: pointer; padding: 2px 8px; border-radius: 6px; background: none; border: none; color: #9a9aaa; }
+.filter-close:hover { background: #1a2040; }
+.filter-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.filter-card { background: #1a2040; border: 0.5px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 12px 14px; }
+.filter-card-title { font-size: 13px; font-weight: 500; color: #f0f0ee; margin-bottom: 4px; }
+.filter-card-sub { font-size: 12px; color: #9a9aaa; line-height: 1.4; }
+.filter-card-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.filter-empty { font-size: 13px; color: #4a4a60; padding: 12px 0; }
+
+@media (max-width: 600px) {
+  .filter-panel { padding: 12px; }
+  .filter-cards { grid-template-columns: 1fr; }
+}
+
+/* TV summary bar – removed */
+.tv-summary { display: flex; gap: 16px; padding: 20px 28px 0; }
+.tv-summary-card { background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius-lg); padding: 16px 24px; min-width: 200px; }
+.tv-summary-card.active { border-color: rgba(124,58,237,0.35); background: rgba(124,58,237,0.08); }
+.tv-summary-n { font-size: 42px; font-weight: 700; color: var(--wb-text); line-height: 1; }
+.tv-summary-n.teal { color: #a78bfa; }
+.tv-summary-l { font-size: 13px; color: var(--wb-text3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* TV topics full width */
+.tv-topics-full { padding: 20px 28px; columns: 2; gap: 16px; }
+.tv-topics-full .tv-topic { break-inside: avoid; margin-bottom: 12px; }
+
+/* Override old grid */
+.tv-layout { display: none; }
+
+@media (max-width: 900px) {
+  .tv-topics-full { columns: 1; }
+}
+
+/* TV Board – two columns */
+.tv-board { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--wb-border); min-height: calc(100vh - 120px); }
+.tv-col { background: var(--wb-dark); padding: 20px 24px; overflow-y: auto; }
+.tv-col-header { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--wb-text3); margin-bottom: 16px; }
+.tv-col-header::after { content: ""; flex: 1; height: 0.5px; background: var(--wb-border); }
+.tv-col-count { background: var(--wb-surface2); color: var(--wb-text2); font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-left: 4px; }
+.tv-col-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* TV topic card – in session gets stronger styling */
+.tv-topic.in-session { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.07); }
+.tv-topic.in-session .tv-topic-text { color: var(--wb-text); }
 </style>
 </head>
 <body>
@@ -232,23 +287,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 </div>
 
 <div class="stats-bar">
-  <div class="stat"><div class="stat-n" id="s-open">0</div><div class="stat-l">Open topics</div></div>
-  <div class="stat"><div class="stat-n teal" id="s-session">0</div><div class="stat-l">In session</div></div>
-  <div class="stat"><div class="stat-n accent" id="s-people">0</div><div class="stat-l">Participants</div></div>
-  <div class="stat"><div class="stat-n" id="s-free">16</div><div class="stat-l">Coaches free</div></div>
-  <div class="stat"><div class="stat-n" id="s-done">0</div><div class="stat-l">Done</div></div>
+  <div class="stat" id="filter-open" onclick="setFilter('open')"><div class="stat-n" id="s-open">0</div><div class="stat-l">Open topics</div></div>
+  <div class="stat" id="filter-session" onclick="setFilter('session')"><div class="stat-n teal" id="s-session">0</div><div class="stat-l">In session</div></div>
+  <div class="stat" id="filter-free" onclick="setFilter('free')"><div class="stat-n" id="s-free">16</div><div class="stat-l">Coaches free</div></div>
+  <div class="stat" id="filter-done" onclick="setFilter('done')"><div class="stat-n" id="s-done">0</div><div class="stat-l">Done</div></div>
 </div>
 
 <!-- TV VIEW -->
 <div id="view-tv" class="active">
-  <div class="tv-layout">
-    <div class="tv-panel">
-      <div class="tv-panel-title">Topics</div>
-      <div id="tv-topics"></div>
+  <div class="tv-board">
+    <div class="tv-col">
+      <div class="tv-col-header">
+        <div class="tv-col-dot dot-busy"></div>
+        In session
+        <span class="tv-col-count" id="tv-s-session">0</span>
+      </div>
+      <div id="tv-topics-session"></div>
     </div>
-    <div class="tv-panel">
-      <div class="tv-panel-title">Coaches</div>
-      <div id="tv-coaches"></div>
+    <div class="tv-col">
+      <div class="tv-col-header">
+        <div class="tv-col-dot dot-free"></div>
+        Waiting for coach
+        <span class="tv-col-count" id="tv-s-open">0</span>
+      </div>
+      <div id="tv-topics-open"></div>
     </div>
   </div>
 </div>
@@ -531,13 +593,84 @@ function render() {
   else if (currentView === "coach") { renderMobileCoaches(); }
 }
 
+let activeFilter = null;
+
+function setFilter(f) {
+  if (activeFilter === f) { activeFilter = null; } else { activeFilter = f; }
+  // Update active state on stat pills
+  ["open","session","free","done"].forEach(k => {
+    document.getElementById("filter-" + k).classList.toggle("active", activeFilter === k);
+  });
+  const panel = document.getElementById("filter-panel");
+  if (activeFilter) { panel.classList.add("show"); renderFilterPanel(); }
+  else { panel.classList.remove("show"); }
+}
+
+function renderFilterPanel() {
+  const el = document.getElementById("filter-cards");
+  const titleEl = document.getElementById("filter-panel-title");
+  let html = "";
+
+  if (activeFilter === "open") {
+    titleEl.textContent = "Open topics — waiting for a coach";
+    const topics = state.topics.filter(t => !t.coachId && !t.done);
+    if (!topics.length) { el.innerHTML = '<div class="filter-empty">No open topics right now.</div>'; return; }
+    topics.forEach(t => {
+      const people = [t.owner, ...t.participants];
+      html += `<div class="filter-card">
+        <div class="filter-card-title">${esc(t.text)}</div>
+        <div class="filter-card-sub">Added by ${esc(t.owner)}</div>
+        <div class="filter-card-badges">${people.map(p => `<span class="chip chip-owner">${esc(p)}</span>`).join("")}</div>
+      </div>`;
+    });
+  } else if (activeFilter === "session") {
+    titleEl.textContent = "Sessions in progress";
+    const topics = state.topics.filter(t => t.coachId && !t.done);
+    if (!topics.length) { el.innerHTML = '<div class="filter-empty">No sessions running right now.</div>'; return; }
+    topics.forEach(t => {
+      const coach = COACHES.find(c => c.id === t.coachId);
+      const people = [t.owner, ...t.participants];
+      html += `<div class="filter-card">
+        <div class="filter-card-title">${esc(t.text)}</div>
+        <div class="filter-card-sub">Coach: ${coach ? esc(coach.name) : "—"}</div>
+        <div class="filter-card-badges">
+          ${t.room ? `<span class="badge badge-room" style="font-size:11px">${esc(t.room)}</span>` : ""}
+          ${people.map(p => `<span class="chip chip-owner">${esc(p)}</span>`).join("")}
+        </div>
+      </div>`;
+    });
+  } else if (activeFilter === "free") {
+    titleEl.textContent = "Coaches available";
+    const free = COACHES.filter(c => !state.coaches[c.id].topicId);
+    if (!free.length) { el.innerHTML = '<div class="filter-empty">All coaches are currently in session.</div>'; return; }
+    free.forEach(c => {
+      html += `<div class="filter-card">
+        <div class="filter-card-title">${esc(c.name)}</div>
+      </div>`;
+    });
+  } else if (activeFilter === "done") {
+    titleEl.textContent = "Completed sessions";
+    const topics = state.topics.filter(t => t.done);
+    if (!topics.length) { el.innerHTML = '<div class="filter-empty">No completed sessions yet.</div>'; return; }
+    topics.forEach(t => {
+      const people = [t.owner, ...t.participants];
+      html += `<div class="filter-card">
+        <div class="filter-card-title">${esc(t.text)}</div>
+        <div class="filter-card-sub">Added by ${esc(t.owner)}</div>
+        <div class="filter-card-badges">${people.map(p => `<span class="chip chip-owner">${esc(p)}</span>`).join("")}</div>
+      </div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
 function renderStats() {
   const active = state.topics.filter(t => !t.done);
   document.getElementById("s-open").textContent = active.filter(t => !t.coachId).length;
   document.getElementById("s-session").textContent = active.filter(t => t.coachId).length;
-  document.getElementById("s-people").textContent = active.reduce((a,t) => a + 1 + t.participants.length, 0);
   document.getElementById("s-free").textContent = COACHES.filter(c => !state.coaches[c.id].topicId).length;
-  document.getElementById("s-done").textContent = COACHES.reduce((a,c) => a + (state.coaches[c.id].sessionsDone||0), 0);
+  document.getElementById("s-done").textContent = state.topics.filter(t => t.done).length;
+  if (activeFilter) renderFilterPanel();
 }
 
 function chipsHtml(owner, participants) {
@@ -549,6 +682,12 @@ function chipsHtml(owner, participants) {
 
 function renderTvTopics() {
   const el = document.getElementById("tv-topics");
+  const openCount = state.topics.filter(t => !t.coachId && !t.done).length;
+  const sessionCount = state.topics.filter(t => t.coachId && !t.done).length;
+  const tvOpen = document.getElementById("tv-s-open");
+  const tvSession = document.getElementById("tv-s-session");
+  if (tvOpen) tvOpen.textContent = openCount;
+  if (tvSession) tvSession.textContent = sessionCount;
   const active = state.topics.filter(t => !t.done);
   const done = state.topics.filter(t => t.done);
   if (!active.length && !done.length) {
@@ -667,6 +806,18 @@ function roomOpts(coachId) {
 }
 
 function renderMobileCoaches() {
+  // Save current dropdown selections before re-render
+  const savedSelections = {};
+  COACHES.forEach(c => {
+    const topicSel = document.getElementById("sel-" + c.id);
+    const roomSel = document.getElementById("room-" + c.id);
+    if (topicSel || roomSel) {
+      savedSelections[c.id] = {
+        topic: topicSel ? topicSel.value : "",
+        room: roomSel ? roomSel.value : ""
+      };
+    }
+  });
   const el = document.getElementById("m-coaches");
   const openTopics = state.topics.filter(t => !t.coachId && !t.done);
   let html = "";
@@ -703,6 +854,16 @@ function renderMobileCoaches() {
     }
   });
   el.innerHTML = html || "";
+
+  // Restore dropdown selections after re-render
+  COACHES.forEach(c => {
+    if (savedSelections[c.id]) {
+      const topicSel = document.getElementById("sel-" + c.id);
+      const roomSel = document.getElementById("room-" + c.id);
+      if (topicSel && savedSelections[c.id].topic) topicSel.value = savedSelections[c.id].topic;
+      if (roomSel && savedSelections[c.id].room) roomSel.value = savedSelections[c.id].room;
+    }
+  });
 }
 
 loadFromSupabase();
