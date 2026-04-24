@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Day — Coaching Board</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --wb-black: #070b1a;
+  --wb-dark: #0d1225;
+  --wb-surface: #131930;
+  --wb-surface2: #1a2040;
+  --wb-border: rgba(255,255,255,0.08);
+  --wb-border2: rgba(255,255,255,0.15);
+  --wb-text: #f0f0ee;
+  --wb-text2: #9a9aaa;
+  --wb-text3: #4a4a60;
+  --wb-accent: #7c3aed;
+  --wb-accent-dim: rgba(124,58,237,0.15);
+  --wb-accent-dark: #5b21b6;
+  --wb-teal: #a78bfa;
+  --wb-teal-dim: rgba(167,139,250,0.12);
+  --wb-red: #ff5a5a;
+  --wb-red-dim: rgba(255,90,90,0.12);
+  --wb-orange: #c084fc;
+  --wb-orange-dim: rgba(192,132,252,0.12);
+  --radius: 8px; --radius-lg: 12px;
+}
+
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--wb-black); color: var(--wb-text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.header { background: var(--wb-dark); border-bottom: 0.5px solid var(--wb-border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-mark { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--wb-text); }
+.logo-mark span { color: #7c3aed; }
+.logo-divider { width: 1px; height: 18px; background: var(--wb-border2); }
+.logo-event { font-size: 14px; color: var(--wb-text2); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.time-pill { font-size: 12px; color: var(--wb-text2); background: var(--wb-surface); padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--wb-border); }
+.view-toggle { display: flex; background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius); overflow: hidden; }
+.vt-btn { padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--wb-text2); font-family: inherit; transition: background 0.12s; }
+.vt-btn.active { background: var(--wb-surface2); color: var(--wb-text); }
+
+/* ── STATS BAR ── */
+.stats-bar { display: flex; gap: 1px; background: var(--wb-border); border-bottom: 0.5px solid var(--wb-border); }
+.stat { flex: 1; background: var(--wb-dark); padding: 14px 20px; text-align: center; }
+.stat-n { font-size: 26px; font-weight: 600; color: var(--wb-text); line-height: 1; }
+.stat-n.accent { color: var(--wb-accent); }
+.stat-n.teal { color: #c4b5fd; }
+.stat-n.orange { color: var(--wb-orange); }
+.stat-l { font-size: 11px; color: var(--wb-text3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── TV VIEW ── */
+#view-tv { display: none; }
+#view-tv.active { display: block; }
+.tv-layout { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 120px); gap: 1px; background: var(--wb-border); }
+.tv-panel { background: var(--wb-dark); padding: 24px 28px; overflow-y: auto; }
+.tv-panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--wb-text3); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.tv-panel-title::after { content: ""; flex: 1; height: 0.5px; background: var(--wb-border); }
+
+.tv-topic { background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; }
+.tv-topic.matched { border-color: rgba(124,58,237,0.4); background: var(--wb-teal-dim); }
+.tv-topic.done { opacity: 0.35; }
+.tv-topic-owner { font-size: 11px; color: var(--wb-text3); margin-bottom: 3px; }
+.tv-topic-text { font-size: 14px; font-weight: 500; color: var(--wb-text); line-height: 1.4; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.chip { font-size: 11px; padding: 2px 9px; border-radius: 20px; }
+.chip-owner { background: var(--wb-surface2); color: var(--wb-text2); border: 0.5px solid var(--wb-border2); }
+.chip-joined { background: var(--wb-accent-dim); color: #c4b5fd; border: 0.5px solid rgba(124,58,237,0.35); }
+.tv-topic-footer { display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+.badge-open { background: var(--wb-orange-dim); color: var(--wb-orange); border: 0.5px solid rgba(255,149,51,0.25); }
+.badge-coach { background: var(--wb-teal-dim); color: #c4b5fd; border: 0.5px solid rgba(124,58,237,0.3); }
+
+.tv-coach { background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius-lg); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.tv-coach.busy { border-color: rgba(124,58,237,0.3); background: var(--wb-teal-dim); }
+.avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; flex-shrink: 0; }
+.av-free { background: var(--wb-surface2); color: var(--wb-text2); border: 0.5px solid var(--wb-border2); }
+.av-busy { background: rgba(124,58,237,0.2); color: #c4b5fd; border: 0.5px solid rgba(124,58,237,0.4); }
+.coach-info { flex: 1; min-width: 0; }
+.coach-name { font-size: 13px; font-weight: 500; color: var(--wb-text); }
+.coach-session { font-size: 11px; color: var(--wb-text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-free { background: var(--wb-text3); }
+.dot-busy { background: #7c3aed; }
+.coach-people { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+
+/* ── MOBILE / LAPTOP VIEW ── */
+#view-mobile { display: none; }
+#view-mobile.active { display: block; }
+#view-coach { display: none; }
+#view-coach.active { display: block; }
+.mobile-layout { max-width: 640px; margin: 0 auto; padding: 24px 20px; }
+.card { background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--wb-text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+.field-label { font-size: 12px; color: var(--wb-text3); margin-bottom: 5px; }
+.wb-input { width: 100%; padding: 10px 14px; background: var(--wb-surface2); border: 0.5px solid var(--wb-border2); border-radius: var(--radius); color: var(--wb-text); font-size: 14px; font-family: inherit; display: block; margin-bottom: 12px; }
+.wb-input:focus { outline: 1.5px solid var(--wb-accent); outline-offset: 0; border-color: transparent; }
+.wb-textarea { width: 100%; padding: 10px 14px; background: var(--wb-surface2); border: 0.5px solid var(--wb-border2); border-radius: var(--radius); color: var(--wb-text); font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; display: block; margin-bottom: 12px; }
+.wb-textarea:focus { outline: 1.5px solid var(--wb-accent); outline-offset: 0; border-color: transparent; }
+.btn-accent { width: 100%; padding: 11px; background: var(--wb-accent); color: #0a0a0a; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: 0.01em; }
+.btn-accent:hover { background: #d4f84a; }
+
+.m-topic { background: var(--wb-dark); border: 0.5px solid var(--wb-border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; }
+.m-topic.matched { border-color: rgba(124,58,237,0.35); }
+.m-topic-owner { font-size: 11px; color: var(--wb-text3); margin-bottom: 3px; }
+.m-topic-text { font-size: 14px; font-weight: 500; color: var(--wb-text); line-height: 1.4; margin-bottom: 10px; }
+.join-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.join-input { flex: 1; padding: 8px 12px; background: var(--wb-surface2); border: 0.5px solid var(--wb-border2); border-radius: var(--radius); color: var(--wb-text); font-size: 13px; font-family: inherit; }
+.join-input:focus { outline: 1.5px solid var(--wb-accent); border-color: transparent; }
+.btn-join { padding: 8px 14px; background: var(--wb-accent-dim); color: var(--wb-accent); border: 0.5px solid rgba(200,241,53,0.3); border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-join:hover { background: rgba(200,241,53,0.2); }
+.m-topic-footer { display: flex; align-items: center; justify-content: space-between; }
+.btn-ghost { font-size: 12px; color: var(--wb-text3); background: none; border: none; cursor: pointer; padding: 3px 7px; border-radius: var(--radius); }
+.btn-ghost:hover { background: var(--wb-red-dim); color: var(--wb-red); }
+
+.empty-state { text-align: center; padding: 36px 20px; color: var(--wb-text3); font-size: 14px; line-height: 1.7; }
+.section-sep { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--wb-text3); margin: 20px 0 10px; }
+
+/* ── COACH MANAGE (mobile) ── */
+.coach-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--wb-border); }
+.coach-row:last-child { border-bottom: none; }
+.coach-row-name { font-size: 14px; font-weight: 500; color: var(--wb-text); flex: 1; }
+.coach-row-status { font-size: 12px; color: var(--wb-text3); }
+.coach-row-status.busy { color: #c4b5fd; }
+.wb-select { width: 100%; padding: 9px 12px; background: var(--wb-surface2); border: 0.5px solid var(--wb-border2); border-radius: var(--radius); color: var(--wb-text); font-size: 13px; font-family: inherit; margin-bottom: 8px; }
+.wb-select:focus { outline: 1.5px solid var(--wb-accent); }
+.btn-take { width: 100%; padding: 9px; background: var(--wb-accent-dim); color: var(--wb-accent); border: 0.5px solid rgba(200,241,53,0.3); border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; margin-bottom: 4px; }
+.btn-take:hover { background: rgba(200,241,53,0.2); }
+.btn-done { width: 100%; padding: 9px; background: var(--wb-teal-dim); color: #c4b5fd; border: 0.5px solid rgba(124,58,237,0.3); border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-done:hover { background: rgba(45,212,160,0.2); }
+
+.coach-assign-block { background: var(--wb-dark); border: 0.5px solid var(--wb-border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; }
+.coach-assign-block.busy-block { border-color: rgba(124,58,237,0.3); }
+.ca-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.ca-name { font-size: 14px; font-weight: 500; }
+.ca-status { font-size: 12px; color: var(--wb-text3); }
+.ca-status.busy { color: #c4b5fd; }
+.ca-session { font-size: 12px; color: var(--wb-text2); margin-bottom: 8px; font-style: italic; }
+
+/* hide scrollbar chrome */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--wb-border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">AI<span>Day</span></div>
+    <div class="logo-divider"></div>
+    <div class="logo-event">Coaching Board</div>
+  </div>
+  <div class="header-right">
+    <div class="view-toggle">
+      <button class="vt-btn active" id="btn-tv" onclick="switchView('tv')">Session overview</button>
+      <button class="vt-btn" id="btn-mobile" onclick="switchView('mobile')">Add topic</button><button class="vt-btn" id="btn-coach" onclick="switchView('coach')">Coaches</button>
+    </div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-n" id="s-open">0</div><div class="stat-l">Open topics</div></div>
+  <div class="stat"><div class="stat-n teal" id="s-session">0</div><div class="stat-l">In session</div></div>
+  <div class="stat"><div class="stat-n accent" id="s-people">0</div><div class="stat-l">Participants</div></div>
+  <div class="stat"><div class="stat-n" id="s-free">16</div><div class="stat-l">Coaches free</div></div>
+  <div class="stat"><div class="stat-n" id="s-done">0</div><div class="stat-l">Done</div></div>
+</div>
+
+<!-- TV VIEW -->
+<div id="view-tv" class="active">
+  <div class="tv-layout">
+    <div class="tv-panel">
+      <div class="tv-panel-title">Topics</div>
+      <div id="tv-topics"></div>
+    </div>
+    <div class="tv-panel">
+      <div class="tv-panel-title">Coaches</div>
+      <div id="tv-coaches"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE / LAPTOP VIEW -->
+<div id="view-mobile">
+  <div class="mobile-layout">
+
+    <div class="card">
+      <div class="card-title">Add your topic</div>
+      <div class="field-label">Your name</div>
+      <input class="wb-input" id="inp-name" placeholder="e.g. Max Mustermann" maxlength="60" />
+      <div class="field-label">What do you need help with?</div>
+      <textarea class="wb-textarea" id="inp-topic" placeholder="Describe the use case or challenge you'd like to work on…" maxlength="300"></textarea>
+      <button class="btn-accent" onclick="addTopic()">Add topic</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Open topics</div>
+      <div id="m-topics"></div>
+    </div>
+
+  </div>
+</div>
+
+<div id="view-coach">
+  <div class="mobile-layout">
+    <div class="card">
+      <div class="card-title">Take a topic</div>
+      <div id="m-coaches"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COACHES = [
+  {id:"c1",  name:"Carolin Horn",      initials:"CH"},
+  {id:"c2",  name:"Evan Summers",      initials:"ES"},
+  {id:"c3",  name:"Ronny Kaiser",      initials:"RK"},
+  {id:"c4",  name:"Georg Püschel",     initials:"GP"},
+  {id:"c5",  name:"Stefan Hintz",      initials:"SH"},
+  {id:"c6",  name:"Helge Wanta",       initials:"HW"},
+  {id:"c7",  name:"Phillip Zechel",    initials:"PZ"},
+  {id:"c8",  name:"Max Peuker",        initials:"MP"},
+  {id:"c9",  name:"Vitus Pacholleck",  initials:"VP"},
+  {id:"c10", name:"Katharina Jessa",   initials:"KJ"},
+  {id:"c11", name:"Stefan Wagner",     initials:"SW"},
+  {id:"c12", name:"Martin Wanitschke", initials:"MW"},
+  {id:"c13", name:"Magda Gruenewald",  initials:"MG"},
+  {id:"c14", name:"Juri Adam",         initials:"JA"},
+  {id:"c15", name:"Markus Hoefling",   initials:"MH"},
+  {id:"c16", name:"Christoph Biering", initials:"CB"},
+];
+
+
+const SUPABASE_URL = 'https://bbkbaflxsxqkzftgsrss.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QoAjkkrAo-PHrlhOFrVSAQ_osxfhCM7';
+
+async function sbFetch(path, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'resolution=merge-duplicates' : ''
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+  if (method === 'GET') return res.json();
+  return res;
+}
+
+async function loadFromSupabase() {
+  const [topics, coaches] = await Promise.all([
+    sbFetch('topics?select=*&order=created_at.desc'),
+    sbFetch('coach_state?select=*')
+  ]);
+  state.topics = (topics || []).map(t => ({
+    id: t.id,
+    owner: t.owner,
+    participants: t.participants || [],
+    text: t.text,
+    coachId: t.coach_id,
+    room: t.room,
+    done: t.done
+  }));
+  COACHES.forEach(c => {
+    const cs = (coaches || []).find(x => x.coach_id === c.id);
+    state.coaches[c.id] = {
+      topicId: cs ? cs.topic_id : null,
+      sessionsDone: cs ? cs.sessions_done : 0
+    };
+  });
+  render();
+}
+
+async function saveTopic(t) {
+  await sbFetch('topics', 'POST', {
+    id: t.id, owner: t.owner, participants: t.participants,
+    text: t.text, coach_id: t.coachId, room: t.room, done: t.done
+  });
+}
+
+async function saveCoach(coachId) {
+  const cs = state.coaches[coachId];
+  await sbFetch('coach_state', 'POST', {
+    coach_id: coachId,
+    topic_id: cs.topicId,
+    sessions_done: cs.sessionsDone
+  });
+}
+
+const ROOMS = [
+  "Projector Room",
+  "Seaview",
+  "Community Room",
+  "Skydeck",
+  "UFO",
+  "Crazy Cube",
+  "Lunch Area",
+  "Shopfloor",
+  "Hightech Startbahn 1",
+  "Hightech Startbahn 2",
+  "Hightech Startbahn Entrance",
+  "Design Area",
+  "Small Engineering Office (BA/ NDX Area)",
+  "Big Engineering Office (Robotics, Infra, CSI Area) 1",
+  "Big Engineering Office (Robotics, Infra, CSI Area) 2",
+  "Operations Area",
+  "Remote",
+];
+let state = { topics: [], coaches: {} };
+COACHES.forEach(c => { state.coaches[c.id] = { topicId: null, sessionsDone: 0 }; });
+
+let currentView = "tv";
+
+function switchView(v) {
+  currentView = v;
+  document.getElementById("view-tv").classList.toggle("active", v === "tv");
+  document.getElementById("view-mobile").classList.toggle("active", v === "mobile");
+  document.getElementById("view-coach").classList.toggle("active", v === "coach");
+  document.getElementById("btn-tv").classList.toggle("active", v === "tv");
+  document.getElementById("btn-mobile").classList.toggle("active", v === "mobile");
+  document.getElementById("btn-coach").classList.toggle("active", v === "coach");
+  render();
+}
+
+function save() {} // replaced by Supabase
+function load() {} // replaced by Supabase
+
+function uid() { return "t" + Date.now() + Math.random().toString(36).slice(2,6); }
+function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+async function addTopic() {
+  const name = document.getElementById("inp-name").value.trim();
+  const text = document.getElementById("inp-topic").value.trim();
+  if (!name || !text) { alert("Please enter your name and describe your topic."); return; }
+  const t = { id: uid(), owner: name, participants: [], text, coachId: null, room: null, done: false };
+  state.topics.unshift(t);
+  document.getElementById("inp-name").value = "";
+  document.getElementById("inp-topic").value = "";
+  render();
+  await saveTopic(t);
+}
+
+async function joinTopic(tid) {
+  const inp = document.getElementById("join-" + tid);
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  const t = state.topics.find(x => x.id === tid);
+  if (!t) return;
+  if (t.owner === name || t.participants.includes(name)) { alert("You're already listed on this topic!"); return; }
+  t.participants.push(name);
+  inp.value = "";
+  render();
+  await saveTopic(t);
+}
+
+async function deleteTopic(tid) {
+  const t = state.topics.find(x => x.id === tid);
+  if (!t) return;
+  if (t.coachId) {
+    state.coaches[t.coachId].topicId = null;
+    await saveCoach(t.coachId);
+  }
+  state.topics = state.topics.filter(x => x.id !== tid);
+  render();
+  await sbFetch('topics?id=eq.' + tid, 'DELETE');
+}
+
+async function assignCoach(coachId, topicId, room) {
+  if (!topicId) return;
+  if (!room) { alert("Please select a room for this session."); return; }
+  const usedRooms = state.topics.filter(t => t.coachId && !t.done && t.room !== "Remote").map(t => t.room);
+  if (room !== "Remote" && usedRooms.includes(room)) { alert("This room is already taken! Please choose another."); return; }
+  const cs = state.coaches[coachId];
+  if (cs.topicId) return;
+  const t = state.topics.find(x => x.id === topicId);
+  if (!t || t.coachId) return;
+  t.coachId = coachId; t.room = room; cs.topicId = topicId;
+  render();
+  await Promise.all([saveTopic(t), saveCoach(coachId)]);
+}
+
+async function freeCoach(coachId) {
+  const cs = state.coaches[coachId];
+  if (!cs.topicId) return;
+  const t = state.topics.find(x => x.id === cs.topicId);
+  if (t) { t.coachId = null; t.room = null; t.done = true; }
+  cs.topicId = null;
+  cs.sessionsDone = (cs.sessionsDone || 0) + 1;
+  render();
+  const saves = [saveCoach(coachId)];
+  if (t) saves.push(saveTopic(t));
+  await Promise.all(saves);
+}
+
+function render() {
+  renderStats();
+  if (currentView === "tv") { renderTvTopics(); renderTvCoaches(); }
+  else if (currentView === "mobile") { renderMobileTopics(); }
+  else if (currentView === "coach") { renderMobileCoaches(); }
+}
+
+function renderStats() {
+  const active = state.topics.filter(t => !t.done);
+  document.getElementById("s-open").textContent = active.filter(t => !t.coachId).length;
+  document.getElementById("s-session").textContent = active.filter(t => t.coachId).length;
+  document.getElementById("s-people").textContent = active.reduce((a,t) => a + 1 + t.participants.length, 0);
+  document.getElementById("s-free").textContent = COACHES.filter(c => !state.coaches[c.id].topicId).length;
+  document.getElementById("s-done").textContent = COACHES.reduce((a,c) => a + (state.coaches[c.id].sessionsDone||0), 0);
+}
+
+function chipsHtml(owner, participants) {
+  return `<div class="chips">
+    <span class="chip chip-owner">${esc(owner)}</span>
+    ${participants.map(p=>`<span class="chip chip-joined">${esc(p)}</span>`).join("")}
+  </div>`;
+}
+
+function renderTvTopics() {
+  const el = document.getElementById("tv-topics");
+  const active = state.topics.filter(t => !t.done);
+  const done = state.topics.filter(t => t.done);
+  if (!active.length && !done.length) {
+    el.innerHTML = '<div class="empty-state">No topics yet — use "My view" to add yours.</div>'; return;
+  }
+  let html = "";
+  active.forEach(t => {
+    const coach = t.coachId ? COACHES.find(c => c.id === t.coachId) : null;
+    html += `<div class="tv-topic ${coach?"matched":""}">
+      <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
+      <div class="tv-topic-text">${esc(t.text)}</div>
+      ${chipsHtml(t.owner, t.participants)}
+      <div class="tv-topic-footer">
+        ${coach ? `<span class="badge badge-coach">With ${esc(coach.name)}</span>` : `<span class="badge badge-open">Waiting for coach</span>`}
+        ${t.room && t.room !== "Remote" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}${t.room === "Remote" ? `<span class="badge badge-remote">Remote</span>` : ""}
+      </div>
+    </div>`;
+  });
+  if (done.length) {
+    html += `<div class="section-sep">Completed (${done.length})</div>`;
+    done.forEach(t => {
+      html += `<div class="tv-topic done">
+        <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
+        <div class="tv-topic-text">${esc(t.text)}</div>
+        ${chipsHtml(t.owner, t.participants)}
+        <div class="tv-topic-footer"><span style="font-size:11px;color:var(--wb-text3)">Session completed</span></div>
+      </div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+function renderTvCoaches() {
+  const el = document.getElementById("tv-coaches");
+  let html = "";
+  const busy = COACHES.filter(c => state.coaches[c.id].topicId);
+  const free = COACHES.filter(c => !state.coaches[c.id].topicId);
+  if (busy.length) {
+    html += `<div class="section-sep" style="margin-top:0">In session</div>`;
+    busy.forEach(c => {
+      const t = state.topics.find(x => x.id === state.coaches[c.id].topicId);
+      const people = t ? [t.owner, ...t.participants] : [];
+      html += `<div class="tv-coach busy">
+        <div class="avatar av-busy">${c.initials}</div>
+        <div class="coach-info">
+          <div class="coach-name">${esc(c.name)}</div>
+          ${t ? `<div class="coach-session">${esc(t.text.slice(0,60))}${t.text.length>60?"…":""}</div>` : ""}
+        ${t && t.room && t.room !== "Remote" ? `<div style="font-size:11px;color:#a78bfa;margin-top:2px">${esc(t.room)}</div>` : ""}${t && t.room === "Remote" ? `<div style="font-size:11px;color:#6ee7b7;margin-top:2px">Remote</div>` : ""}
+          ${people.length ? `<div class="coach-people">${people.map(p=>`<span class="chip chip-joined" style="font-size:10px">${esc(p)}</span>`).join("")}</div>` : ""}
+        </div>
+        <div class="dot dot-busy"></div>
+      </div>`;
+    });
+  }
+  if (free.length) {
+    html += `<div class="section-sep">Available</div>`;
+    free.forEach(c => {
+      html += `<div class="tv-coach">
+        <div class="avatar av-free">${c.initials}</div>
+        <div class="coach-info"><div class="coach-name">${esc(c.name)}</div></div>
+        <div class="dot dot-free"></div>
+      </div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+function renderMobileTopics() {
+  const el = document.getElementById("m-topics");
+  const active = state.topics.filter(t => !t.done);
+  const done = state.topics.filter(t => t.done);
+  if (!active.length && !done.length) {
+    el.innerHTML = '<div class="empty-state">No topics yet.<br>Add yours above!</div>'; return;
+  }
+  let html = "";
+  active.forEach(t => {
+    const coach = t.coachId ? COACHES.find(c => c.id === t.coachId) : null;
+    html += `<div class="m-topic ${coach?"matched":""}">
+      <div class="m-topic-owner">Added by ${esc(t.owner)}</div>
+      <div class="m-topic-text">${esc(t.text)}</div>
+      ${chipsHtml(t.owner, t.participants)}
+      ${!coach ? `<div class="join-row">
+        <input class="join-input" id="join-${t.id}" placeholder="Your name to join…" maxlength="60"
+          onkeydown="if(event.key==='Enter')joinTopic('${t.id}')"/>
+        <button class="btn-join" onclick="joinTopic('${t.id}')">+ Join</button>
+      </div>` : ""}
+      <div class="m-topic-footer">
+        ${coach ? `<span class="badge badge-coach">With ${esc(coach.name)}</span>` : `<span class="badge badge-open">Waiting for coach</span>`}
+        ${t.room && t.room !== "Remote" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}${t.room === "Remote" ? `<span class="badge badge-remote">Remote</span>` : ""}
+        <button class="btn-ghost" onclick="deleteTopic('${t.id}')">remove</button>
+      </div>
+    </div>`;
+  });
+  if (done.length) {
+    html += `<div class="section-sep">Completed (${done.length})</div>`;
+    done.forEach(t => {
+      html += `<div class="m-topic done" style="opacity:.4">
+        <div class="m-topic-owner">Added by ${esc(t.owner)}</div>
+        <div class="m-topic-text">${esc(t.text)}</div>
+        ${chipsHtml(t.owner, t.participants)}
+        <div class="m-topic-footer"><span style="font-size:11px;color:var(--wb-text3)">Done</span>
+        <button class="btn-ghost" onclick="deleteTopic('${t.id}')">remove</button></div>
+      </div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+function roomOpts(coachId) {
+  const usedRooms = state.topics.filter(t => t.coachId && !t.done && t.room !== "Remote").map(t => t.room);
+  const opts = ROOMS.map(r => {
+    const taken = r !== "Remote" && usedRooms.includes(r);
+    return `<option value="${esc(r)}" ${taken ? "disabled" : ""}>${r === "Remote" ? "Remote (online)" : esc(r)}${taken ? " (occupied)" : ""}</option>`;
+  }).join("");
+  return `<option value="">— select a room —</option>${opts}`;
+}
+
+function renderMobileCoaches() {
+  const el = document.getElementById("m-coaches");
+  const openTopics = state.topics.filter(t => !t.coachId && !t.done);
+  let html = "";
+  COACHES.forEach(c => {
+    const cs = state.coaches[c.id];
+    const t = cs.topicId ? state.topics.find(x => x.id === cs.topicId) : null;
+    const people = t ? [t.owner, ...t.participants] : [];
+    if (cs.topicId) {
+      html += `<div class="coach-assign-block busy-block">
+        <div class="ca-top">
+          <div class="avatar av-busy">${c.initials}</div>
+          <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status busy">In session</div></div>
+        </div>
+        ${t ? `<div class="ca-session">"${esc(t.text.slice(0,70))}${t.text.length>70?"…":""}"</div>` : ""}
+        ${people.length ? `<div class="chips" style="margin-bottom:10px">${people.map(p=>`<span class="chip chip-joined">${esc(p)}</span>`).join("")}</div>` : ""}
+        <button class="btn-done" onclick="freeCoach('${c.id}')">Mark session as done</button>
+      </div>`;
+    } else {
+      const opts = openTopics.map(t => {
+        const n = 1 + t.participants.length;
+        return `<option value="${t.id}">${esc(t.owner)}${n>1?" +"+(n-1)+" more":""}: ${esc(t.text.slice(0,45))}${t.text.length>45?"…":""}</option>`;
+      }).join("");
+      html += `<div class="coach-assign-block">
+        <div class="ca-top">
+          <div class="avatar av-free">${c.initials}</div>
+          <div><div class="ca-name">${esc(c.name)}</div><div class="ca-status">Available</div></div>
+        </div>
+        ${openTopics.length
+          ? `<select class="wb-select" id="sel-${c.id}"><option value="">— select a topic —</option>${opts}</select>
+             <select class="wb-select" id="room-${c.id}">${roomOpts(c.id)}</select>
+             <button class="btn-take" onclick="assignCoach('${c.id}',document.getElementById('sel-${c.id}').value,document.getElementById('room-${c.id}').value)">Take this topic</button>`
+          : `<div style="font-size:12px;color:var(--wb-text3)">No open topics yet</div>`}
+      </div>`;
+    }
+  });
+  el.innerHTML = html || "";
+}
+
+loadFromSupabase();
+setInterval(() => { loadFromSupabase(); }, 8000);
+</script>
+</body>
+</html>
