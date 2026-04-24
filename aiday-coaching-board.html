@@ -681,43 +681,44 @@ function chipsHtml(owner, participants) {
 }
 
 function renderTvTopics() {
-  const el = document.getElementById("tv-topics");
-  const openCount = state.topics.filter(t => !t.coachId && !t.done).length;
-  const sessionCount = state.topics.filter(t => t.coachId && !t.done).length;
+  const elSession = document.getElementById("tv-topics-session");
+  const elOpen = document.getElementById("tv-topics-open");
+  if (!elSession || !elOpen) return;
+
+  const inSession = state.topics.filter(t => t.coachId && !t.done);
+  const waiting = state.topics.filter(t => !t.coachId && !t.done);
+
   const tvOpen = document.getElementById("tv-s-open");
   const tvSession = document.getElementById("tv-s-session");
-  if (tvOpen) tvOpen.textContent = openCount;
-  if (tvSession) tvSession.textContent = sessionCount;
-  const active = state.topics.filter(t => !t.done);
-  const done = state.topics.filter(t => t.done);
-  if (!active.length && !done.length) {
-    el.innerHTML = '<div class="empty-state">No topics yet — use "My view" to add yours.</div>'; return;
-  }
-  let html = "";
-  active.forEach(t => {
-    const coach = t.coachId ? COACHES.find(c => c.id === t.coachId) : null;
-    html += `<div class="tv-topic ${coach?"matched":""}">
+  if (tvOpen) tvOpen.textContent = waiting.length;
+  if (tvSession) tvSession.textContent = inSession.length;
+
+  // In session column
+  elSession.innerHTML = inSession.length ? inSession.map(t => {
+    const coach = COACHES.find(c => c.id === t.coachId);
+    return `<div class="tv-topic in-session">
       <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
       <div class="tv-topic-text">${esc(t.text)}</div>
       ${chipsHtml(t.owner, t.participants)}
       <div class="tv-topic-footer">
-        ${coach ? `<span class="badge badge-coach">With ${esc(coach.name)}</span>` : `<span class="badge badge-open">Waiting for coach</span>`}
-        ${t.room && t.room !== "Remote" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}${t.room === "Remote" ? `<span class="badge badge-remote">Remote</span>` : ""}
+        ${coach ? `<span class="badge badge-coach">With ${esc(coach.name)}</span>` : ""}
+        ${t.room && t.room !== "Remote" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}
+        ${t.room === "Remote" ? `<span class="badge badge-remote">Remote</span>` : ""}
       </div>
     </div>`;
-  });
-  if (done.length) {
-    html += `<div class="section-sep">Completed (${done.length})</div>`;
-    done.forEach(t => {
-      html += `<div class="tv-topic done">
-        <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
-        <div class="tv-topic-text">${esc(t.text)}</div>
-        ${chipsHtml(t.owner, t.participants)}
-        <div class="tv-topic-footer"><span style="font-size:11px;color:var(--wb-text3)">Session completed</span></div>
-      </div>`;
-    });
-  }
-  el.innerHTML = html;
+  }).join("") : '<div class="empty-state">No sessions running yet.</div>';
+
+  // Waiting column
+  elOpen.innerHTML = waiting.length ? waiting.map(t => {
+    return `<div class="tv-topic">
+      <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
+      <div class="tv-topic-text">${esc(t.text)}</div>
+      ${chipsHtml(t.owner, t.participants)}
+      <div class="tv-topic-footer">
+        <span class="badge badge-open">Waiting for coach</span>
+      </div>
+    </div>`;
+  }).join("") : '<div class="empty-state">No open topics yet.</div>';
 }
 
 function renderTvCoaches() {
