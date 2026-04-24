@@ -453,7 +453,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
     </div>
     <div class="confirm-btns">
       <button class="btn-confirm-no" onclick="closeConfirm()">Cancel</button>
-      <button class="btn-confirm-yes" id="confirm-yes-btn">Yes, take this topic</button>
+      <button class="btn-confirm-yes" id="confirm-yes-btn" onclick="confirmAssign()">Yes, take this topic</button>
     </div>
   </div>
 </div>
@@ -583,20 +583,39 @@ async function loadFromSupabase() {
 }
 
 async function saveTopic(t) {
-  await sbFetch('topics', 'POST', {
-    id: t.id, owner: t.owner, participants: t.participants,
-    text: t.text, coach_id: t.coachId, room: t.room, done: t.done,
+  // Try PATCH first (update existing), fall back to POST (insert new)
+  const res = await sbFetch('topics?id=eq.' + t.id, 'PATCH', {
+    owner: t.owner, participants: t.participants,
+    text: t.text, coach_id: t.coachId || null,
+    room: t.room || null, done: t.done,
     start_time: t.startTime || null
   });
+  // If not found, insert
+  if (res && res.status === 404) {
+    await sbFetch('topics', 'POST', {
+      id: t.id, owner: t.owner, participants: t.participants,
+      text: t.text, coach_id: t.coachId || null,
+      room: t.room || null, done: t.done,
+      start_time: t.startTime || null
+    });
+  }
 }
 
 async function saveCoach(coachId) {
   const cs = state.coaches[coachId];
-  await sbFetch('coach_state', 'POST', {
-    coach_id: coachId,
-    topic_id: cs.topicId,
-    sessions_done: cs.sessionsDone
+  // First try update, if no rows affected do insert
+  const res = await sbFetch('coach_state?coach_id=eq.' + coachId, 'PATCH', {
+    topic_id: cs.topicId || null,
+    sessions_done: cs.sessionsDone || 0
   });
+  // If no row exists yet, insert it
+  if (res && res.status === 404 || res && res.headers && res.headers.get('content-range') === '*/0') {
+    await sbFetch('coach_state', 'POST', {
+      coach_id: coachId,
+      topic_id: cs.topicId || null,
+      sessions_done: cs.sessionsDone || 0
+    });
+  }
 }
 
 const ROOMS = [
@@ -645,12 +664,17 @@ async function addTopic() {
   const name = document.getElementById("inp-name").value.trim();
   const text = document.getElementById("inp-topic").value.trim();
   if (!name || !text) { alert("Please enter your name and describe your topic."); return; }
-  const t = { id: uid(), owner: name, participants: [], text, coachId: null, room: null, done: false };
+  const t = { id: uid(), owner: name, participants: [], text, coachId: null, room: null, done: false, startTime: null };
   state.topics.unshift(t);
   document.getElementById("inp-name").value = "";
   document.getElementById("inp-topic").value = "";
   render();
-  await saveTopic(t);
+  try {
+    await sbFetch('topics', 'POST', {
+      id: t.id, owner: t.owner, participants: t.participants,
+      text: t.text, coach_id: null, room: null, done: false, start_time: null
+    });
+  } catch(e) { console.error('addTopic failed:', e); }
 }
 
 async function joinTopic(tid) {
@@ -730,7 +754,7 @@ function closeConfirm() {
   document.getElementById("confirm-overlay").classList.remove("show");
   pendingAssign = null;
 }
-document.getElementById("confirm-yes-btn").addEventListener("click", confirmAssign);
+
 
 
 const CONFETTI_COLORS = ["#7c3aed","#a78bfa","#c4b5fd","#e879f9","#f0abfc","#38bdf8","#c8f135","#fb923c"];
