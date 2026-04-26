@@ -596,17 +596,16 @@ function launchConfetti(coachName) {
 }
 
 
-const SLACK_WEBHOOK = 'https://hook.eu1.make.com/ty8ki453g5hl84yimkxjo9r4wwhjazrf';
 const BOARD_URL = 'https://project-byavi.vercel.app/aiday-coaching-board.html';
 
 async function sendSlack(text, blocks) {
   try {
-    await fetch(SLACK_WEBHOOK, {
+    const res = await fetch('/api/slack', {
       method: 'POST',
-      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, blocks })
     });
-    console.log('Slack notification sent');
+    console.log('Slack sent:', res.status);
   } catch(e) { console.error('Slack error:', e); }
 }
 
