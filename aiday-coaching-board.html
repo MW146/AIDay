@@ -1262,7 +1262,8 @@ function renderTvTopics() {
   const now = new Date();
   const withCoach = state.topics.filter(t => t.coachId && !t.done);
   const inSession = withCoach.filter(t => !t.startTime || new Date(t.startTime) <= now);
-  const startingSoon = withCoach.filter(t => t.startTime && new Date(t.startTime) > now);
+  const startingSoon = withCoach.filter(t => t.startTime && new Date(t.startTime) > now)
+    .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
   const waiting = state.topics.filter(t => !t.coachId && !t.done);
 
   const tvSession = document.getElementById("tv-s-session");
