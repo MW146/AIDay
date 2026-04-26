@@ -1304,9 +1304,9 @@ function renderTvTopics() {
         <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
         <div class="tv-topic-text">${esc(t.text)}</div>
         ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
-        <div class="tv-topic-footer" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px">
           <span class="badge badge-open">Waiting for coach</span>
-          <button class="btn-ghost" onclick="deleteTopic('${t.id}')">remove</button>
+          <button style="font-size:12px;color:#ff5a5a;background:rgba(255,90,90,0.1);border:0.5px solid rgba(255,90,90,0.3);cursor:pointer;padding:3px 10px;border-radius:6px" onclick="deleteTopic('${t.id}')">remove</button>
         </div>
       </div>`).join("")
     : '<div class="empty-state">No open topics yet.</div>';
