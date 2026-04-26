@@ -368,6 +368,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .presence-toggle-sm { padding: 0 10px; height: 36px; font-size: 12px; }
 .chip-remote { background: rgba(45,212,160,0.12); color: #6ee7b7; border: 0.5px solid rgba(45,212,160,0.3); }
 .badge-hybrid { background: rgba(251,146,60,0.12); color: #fb923c; border: 0.5px solid rgba(251,146,60,0.3); font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+
+/* Notification Bell */
+.notif-bell { position: relative; background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius); padding: 6px 10px; font-size: 16px; cursor: pointer; color: var(--wb-text2); line-height: 1; display: flex; align-items: center; }
+.notif-bell:hover { background: var(--wb-surface2); }
+.notif-badge { position: absolute; top: -4px; right: -4px; background: #7c3aed; color: white; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+/* Notification Center */
+.notif-center { position: fixed; top: 52px; right: 16px; width: 340px; background: var(--wb-dark); border: 0.5px solid rgba(124,58,237,0.35); border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 500; max-height: 480px; display: flex; flex-direction: column; }
+.notif-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 0.5px solid var(--wb-border); }
+.notif-title { font-size: 13px; font-weight: 600; color: var(--wb-text); }
+.notif-clear { font-size: 12px; color: var(--wb-text3); background: none; border: none; cursor: pointer; }
+.notif-clear:hover { color: var(--wb-text2); }
+#notif-list { overflow-y: auto; max-height: 400px; }
+.notif-empty { padding: 20px; text-align: center; font-size: 13px; color: var(--wb-text3); }
+.notif-item { padding: 12px 16px; border-bottom: 0.5px solid var(--wb-border); cursor: pointer; transition: background 0.1s; }
+.notif-item:hover { background: var(--wb-surface); }
+.notif-item.unread { border-left: 2px solid #7c3aed; }
+.notif-item.urgent { border-left: 2px solid #f59e0b; background: rgba(245,158,11,0.05); }
+.notif-icon { font-size: 16px; margin-right: 8px; }
+.notif-text { font-size: 13px; color: var(--wb-text); line-height: 1.4; }
+.notif-time { font-size: 11px; color: var(--wb-text3); margin-top: 3px; }
+
+/* Upcoming sessions panel in TV view */
+.tv-upcoming { background: rgba(245,158,11,0.08); border-bottom: 0.5px solid rgba(245,158,11,0.2); padding: 10px 24px; display: none; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tv-upcoming.show { display: flex; }
+.tv-upcoming-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #fbbf24; white-space: nowrap; }
+.tv-upcoming-item { font-size: 13px; color: var(--wb-text); background: rgba(245,158,11,0.12); border: 0.5px solid rgba(245,158,11,0.25); border-radius: var(--radius); padding: 4px 12px; }
+.tv-upcoming-item strong { color: #fbbf24; }
 </style>
 </head>
 <body>
@@ -384,6 +412,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
       <button class="vt-btn" id="btn-coach" onclick="switchView('coach')">Coaches</button>
     </div>
     <button class="vt-btn btn-add-plus" id="btn-mobile" onclick="switchView('mobile')" title="Add topic">+</button>
+    <button class="notif-bell" id="notif-bell" onclick="toggleNotifCenter()" title="Notifications">
+      &#x1F514;
+      <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+    </button>
   </div>
 </div>
 
@@ -549,7 +581,7 @@ function launchConfetti(coachName) {
 }
 
 
-const SLACK_WEBHOOK = 'https://hooks.slack.com/services/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';
+const SLACK_WEBHOOK = 'https://hook.eu1.make.com/ty8ki453g5hl84yimkxjo9r4wwhjazrf';
 const BOARD_URL = 'https://project-byavi.vercel.app/aiday-coaching-board.html';
 
 async function sendSlack(text, blocks) {
@@ -629,6 +661,135 @@ function checkUpcomingSessions() {
 
 // Check every minute for upcoming sessions
 setInterval(checkUpcomingSessions, 60000);
+
+
+// ── NOTIFICATION CENTER ──
+const notifications = JSON.parse(localStorage.getItem('aiday_notifs') || '[]');
+let unreadCount = 0;
+
+function saveNotifs() { localStorage.setItem('aiday_notifs', JSON.stringify(notifications.slice(0, 50))); }
+
+function addNotification(icon, text, urgent = false) {
+  const n = { id: uid(), icon, text, urgent, time: Date.now(), read: false };
+  notifications.unshift(n);
+  unreadCount++;
+  saveNotifs();
+  renderNotifBadge();
+  renderNotifList();
+  // Browser push notification
+  if (Notification.permission === 'granted') {
+    new Notification('AIDay Board', { body: text, icon: '/favicon.ico' });
+  }
+}
+
+function renderNotifBadge() {
+  const badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  if (unreadCount > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderNotifList() {
+  const el = document.getElementById('notif-list');
+  if (!el) return;
+  if (!notifications.length) { el.innerHTML = '<div class="notif-empty">No notifications yet</div>'; return; }
+  el.innerHTML = notifications.map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'} ${n.urgent ? 'urgent' : ''}" onclick="markRead('${n.id}')">
+      <div><span class="notif-icon">${n.icon}</span><span class="notif-text">${esc(n.text)}</span></div>
+      <div class="notif-time">${formatRelTime(n.time)}</div>
+    </div>`).join('');
+}
+
+function markRead(id) {
+  const n = notifications.find(x => x.id === id);
+  if (n && !n.read) { n.read = true; unreadCount = Math.max(0, unreadCount-1); saveNotifs(); renderNotifBadge(); renderNotifList(); }
+}
+
+function clearNotifications() {
+  notifications.length = 0; unreadCount = 0; saveNotifs(); renderNotifBadge(); renderNotifList();
+}
+
+function toggleNotifCenter() {
+  const el = document.getElementById('notif-center');
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'flex';
+  if (!isOpen) {
+    // Mark all as read when opening
+    notifications.forEach(n => n.read = true);
+    unreadCount = 0; saveNotifs(); renderNotifBadge(); renderNotifList();
+  }
+}
+
+function formatRelTime(ts) {
+  const diff = Math.round((Date.now() - ts) / 60000);
+  if (diff < 1) return 'just now';
+  if (diff < 60) return diff + ' min ago';
+  return Math.round(diff/60) + 'h ago';
+}
+
+// Request browser notification permission
+if (Notification.permission === 'default') {
+  setTimeout(() => Notification.requestPermission(), 3000);
+}
+
+// Track known topic IDs to detect new ones
+let knownTopicIds = new Set();
+let knownSessionIds = new Set();
+
+function checkForNewEvents(oldTopics, newTopics) {
+  // New topics added
+  newTopics.filter(t => !t.done && !knownTopicIds.has(t.id)).forEach(t => {
+    if (knownTopicIds.size > 0) { // skip on first load
+      addNotification('&#x1F4CC;', `New topic by ${t.owner}: "${t.text.slice(0,60)}${t.text.length>60?'…':''}"`, false);
+    }
+    knownTopicIds.add(t.id);
+  });
+  // Sessions just assigned
+  newTopics.filter(t => t.coachId && !t.done && !knownSessionIds.has(t.id)).forEach(t => {
+    if (knownSessionIds.size > 0) {
+      const coach = COACHES.find(c => c.id === t.coachId);
+      const room = t.room || 'TBD';
+      addNotification('&#x1F3AF;', `Session started: "${t.text.slice(0,50)}…" with ${coach ? coach.name : 'a coach'} in ${room}`, false);
+    }
+    knownSessionIds.add(t.id);
+  });
+}
+
+// Update upcoming sessions bar in TV view
+function updateUpcomingBar() {
+  const el = document.getElementById('tv-upcoming');
+  if (!el) return;
+  const now = new Date();
+  const soon = state.topics
+    .filter(t => t.coachId && !t.done && t.startTime && new Date(t.startTime) > now)
+    .sort((a,b) => new Date(a.startTime) - new Date(b.startTime));
+  if (!soon.length) { el.classList.remove('show'); return; }
+  el.classList.add('show');
+  el.innerHTML = '<span class="tv-upcoming-label">&#x23F0; Starting soon</span>' +
+    soon.map(t => {
+      const coach = COACHES.find(c => c.id === t.coachId);
+      const mins = Math.round((new Date(t.startTime) - now) / 60000);
+      return `<span class="tv-upcoming-item"><strong>~${roundUpToFive(t.startTime)}</strong> · ${esc(t.text.slice(0,40))} · ${coach ? esc(coach.name) : ''} · ${esc(t.room||'')}</span>`;
+    }).join('');
+  // Notify for sessions starting in ≤10 min
+  soon.filter(t => {
+    const mins = Math.round((new Date(t.startTime) - now) / 60000);
+    return mins <= 10 && !remindedTopics.has(t.id);
+  }).forEach(t => {
+    const coach = COACHES.find(c => c.id === t.coachId);
+    const mins = Math.round((new Date(t.startTime) - now) / 60000);
+    addNotification('&#x23F0;', `Starting in ${mins} min: "${t.text.slice(0,50)}" · ${coach ? coach.name : ''} · ${t.room||''}`, true);
+    remindedTopics.add(t.id);
+  });
+}
+
+// Init notifs from storage
+renderNotifBadge();
+renderNotifList();
 
 const COACHES = [
   {id:"c1",  name:"Carolin Horn",      initials:"CH"},
@@ -711,7 +872,10 @@ async function loadFromSupabase() {
       sessionsDone: cs ? cs.sessions_done : 0
     };
   });
+  const prevTopics = [...(state.topics || [])];
   render();
+  checkForNewEvents(prevTopics, state.topics);
+  updateUpcomingBar();
 
   // Restore dropdown selections after render
   COACHES.forEach(c => {
