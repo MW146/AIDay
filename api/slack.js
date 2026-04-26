@@ -6,6 +6,19 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {
+    // Fix HTML entities in text before sending to Slack
+    const body = JSON.parse(JSON.stringify(req.body, (key, val) => {
+      if (typeof val === 'string') {
+        return val
+          .replace(/&#x1F4CC;/g, '\u{1F4CC}')
+          .replace(/&#x1F447;/g, '\u{1F447}')
+          .replace(/&#x23F0;/g, '\u{23F0}')
+          .replace(/&#x1F3AF;/g, '\u{1F3AF}')
+          .replace(/&#x1F389;/g, '\u{1F389}');
+      }
+      return val;
+    }));
+
     const response = await fetch('https://slack.com/api/chat.postMessage', {
       method: 'POST',
       headers: {
@@ -14,7 +27,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         channel: 'C0B015M3B9A',
-        ...req.body
+        ...body
       })
     });
     const data = await response.json();
