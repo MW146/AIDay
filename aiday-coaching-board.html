@@ -605,10 +605,12 @@ async function loadFromSupabase() {
     ownerPresence: t.owner_presence || "onsite",
     participantPresence: t.participant_presence || {}
   }));
+  // Derive coach state directly from topics (source of truth)
   COACHES.forEach(c => {
+    const activeTopic = state.topics.find(t => t.coachId === c.id && !t.done);
     const cs = (coaches || []).find(x => x.coach_id === c.id);
     state.coaches[c.id] = {
-      topicId: cs ? cs.topic_id : null,
+      topicId: activeTopic ? activeTopic.id : null,
       sessionsDone: cs ? cs.sessions_done : 0
     };
   });
