@@ -117,8 +117,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .btn-join { padding: 8px 14px; background: var(--wb-accent-dim); color: var(--wb-accent); border: 0.5px solid rgba(200,241,53,0.3); border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
 .btn-join:hover { background: rgba(200,241,53,0.2); }
 .m-topic-footer { display: flex; align-items: center; justify-content: space-between; }
-.btn-ghost { font-size: 12px; color: var(--wb-text3); background: none; border: none; cursor: pointer; padding: 3px 7px; border-radius: var(--radius); }
-.btn-ghost:hover { background: var(--wb-red-dim); color: var(--wb-red); }
+.btn-ghost { font-size: 12px; color: var(--wb-text2); background: none; border: 0.5px solid var(--wb-border2); cursor: pointer; padding: 3px 10px; border-radius: var(--radius); }
+.btn-ghost:hover { background: var(--wb-red-dim); color: var(--wb-red); border-color: var(--wb-red); }
 
 .empty-state { text-align: center; padding: 36px 20px; color: var(--wb-text3); font-size: 14px; line-height: 1.7; }
 .section-sep { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--wb-text3); margin: 20px 0 10px; }
