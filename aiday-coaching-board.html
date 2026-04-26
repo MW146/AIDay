@@ -615,11 +615,11 @@ async function notifyNewTopic(t) {
     [
       {
         type: "section",
-        text: { type: "mrkdwn", text: `*&#x1F4CC; New topic added by ${t.owner}*\n\n_"${t.text}"_` }
+        text: { type: "mrkdwn", text: `*📌 New topic added by ${t.owner}*\n\n_"${t.text}"_` }
       },
       {
         type: "section",
-        text: { type: "mrkdwn", text: `Interested? Join the session on the AI Day board &#x1F447;` },
+        text: { type: "mrkdwn", text: `Interested? Join the session on the AI Day board 👇` },
         accessory: {
           type: "button",
           text: { type: "plain_text", text: "Join session" },
@@ -638,11 +638,11 @@ async function notifySessionSoon(t, coach, minutesLeft) {
     [
       {
         type: "section",
-        text: { type: "mrkdwn", text: `*&#x23F0; Session starting in ${minutesLeft} minutes!*\n\n_"${t.text}"_\n\n*Coach:* ${coach.name}\n*Room:* ${room}` }
+        text: { type: "mrkdwn", text: `*⏰ Session starting in ${minutesLeft} minutes!*\n\n_"${t.text}"_\n\n*Coach:* ${coach.name}\n*Room:* ${room}` }
       },
       {
         type: "section",
-        text: { type: "mrkdwn", text: "Head over now if you want to join &#x1F447;" },
+        text: { type: "mrkdwn", text: "Head over now if you want to join 👇" },
         accessory: {
           type: "button",
           text: { type: "plain_text", text: "View board" },
