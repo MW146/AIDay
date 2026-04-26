@@ -1129,6 +1129,14 @@ function renderTvCoaches() { /* removed - coaches not shown in TV view */ }
 
 function renderMobileTopics() {
   const el = document.getElementById("m-topics");
+
+  // Save any typed-in join input values before re-render
+  const savedJoinInputs = {};
+  state.topics.forEach(t => {
+    const inp = document.getElementById("join-" + t.id);
+    if (inp && inp.value) savedJoinInputs[t.id] = inp.value;
+  });
+
   const active = state.topics.filter(t => !t.done);
   const done = state.topics.filter(t => t.done);
   if (!active.length && !done.length) {
@@ -1169,9 +1177,13 @@ function renderMobileTopics() {
     });
   }
   el.innerHTML = html;
-}
 
-function roundUpTo5(date) {
+  // Restore join input values after re-render
+  Object.entries(savedJoinInputs).forEach(([tid, val]) => {
+    const inp = document.getElementById("join-" + tid);
+    if (inp) inp.value = val;
+  });
+}
   const ms = date.getTime();
   const mins = date.getMinutes();
   const remainder = mins % 5;
