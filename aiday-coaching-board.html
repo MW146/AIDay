@@ -1281,7 +1281,12 @@ function renderMobileCoaches() {
 
 
 loadFromSupabase();
-setInterval(() => { loadFromSupabase(); }, 8000);
+setInterval(() => {
+  // Don't reload while user has a dropdown open
+  const activeEl = document.activeElement;
+  if (activeEl && activeEl.tagName === 'SELECT') return;
+  loadFromSupabase();
+}, 8000);
 setInterval(() => { if(currentView === "tv") renderTvTopics(); }, 10000);
 </script>
 </body>
