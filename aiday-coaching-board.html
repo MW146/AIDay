@@ -589,6 +589,21 @@ async function sbFetch(path, method='GET', body=null) {
 }
 
 async function loadFromSupabase() {
+  // Save dropdown selections before reload
+  const savedSelections = {};
+  COACHES.forEach(c => {
+    const topicSel = document.getElementById("sel-" + c.id);
+    const roomSel = document.getElementById("room-" + c.id);
+    const delaySel = document.getElementById("delay-" + c.id);
+    if (topicSel || roomSel || delaySel) {
+      savedSelections[c.id] = {
+        topic: topicSel ? topicSel.value : "",
+        room: roomSel ? roomSel.value : "",
+        delay: delaySel ? delaySel.value : "0"
+      };
+    }
+  });
+
   const [topics, coaches] = await Promise.all([
     sbFetch('topics?select=*&order=created_at.desc'),
     sbFetch('coach_state?select=*')
@@ -615,6 +630,18 @@ async function loadFromSupabase() {
     };
   });
   render();
+
+  // Restore dropdown selections after render
+  COACHES.forEach(c => {
+    if (savedSelections[c.id]) {
+      const topicSel = document.getElementById("sel-" + c.id);
+      const roomSel = document.getElementById("room-" + c.id);
+      const delaySel = document.getElementById("delay-" + c.id);
+      if (topicSel && savedSelections[c.id].topic) topicSel.value = savedSelections[c.id].topic;
+      if (roomSel && savedSelections[c.id].room) roomSel.value = savedSelections[c.id].room;
+      if (delaySel && savedSelections[c.id].delay) delaySel.value = savedSelections[c.id].delay;
+    }
+  });
 }
 
 async function saveTopic(t) {
