@@ -273,6 +273,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
   .tv-col-header { font-size: 12px; margin-bottom: 12px; }
 }
 .tv-board-3 { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 700px) { .tv-board-3 { grid-template-columns: 1fr; } }
+@media (max-width: 700px) {
+  .tv-col-header { cursor: pointer; }
+  .tv-col-header::before { content: "▼"; font-size: 10px; margin-right: 4px; transition: transform 0.2s; display: inline-block; }
+  .tv-col.collapsed .tv-col-header::before { transform: rotate(-90deg); }
+  .tv-col.collapsed .tv-col-content { display: none; }
+}
 .badge-soon { background: rgba(245,158,11,0.15); color: #fbbf24; border: 0.5px solid rgba(245,158,11,0.3); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
 .tv-topic.starting-soon { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.05); }
 .tv-col { background: var(--wb-dark); padding: 20px 24px; overflow-y: auto; }
@@ -446,29 +453,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 <!-- TV VIEW -->
 <div id="view-tv" class="active">
   <div class="tv-board tv-board-3">
-    <div class="tv-col">
-      <div class="tv-col-header">
+    <div class="tv-col" id="tv-col-session">
+      <div class="tv-col-header" onclick="toggleTvCol('tv-col-session')">
         <div class="tv-col-dot dot-busy"></div>
         In session
         <span class="tv-col-count" id="tv-s-session">0</span>
       </div>
-      <div id="tv-topics-session"></div>
+      <div class="tv-col-content" id="tv-topics-session"></div>
     </div>
-    <div class="tv-col">
-      <div class="tv-col-header">
+    <div class="tv-col" id="tv-col-soon">
+      <div class="tv-col-header" onclick="toggleTvCol('tv-col-soon')">
         <div class="tv-col-dot" style="background:#f59e0b"></div>
         Starting soon
         <span class="tv-col-count" id="tv-s-soon">0</span>
       </div>
-      <div id="tv-topics-soon"></div>
+      <div class="tv-col-content" id="tv-topics-soon"></div>
     </div>
-    <div class="tv-col">
-      <div class="tv-col-header">
+    <div class="tv-col" id="tv-col-open">
+      <div class="tv-col-header" onclick="toggleTvCol('tv-col-open')">
         <div class="tv-col-dot dot-free"></div>
         Waiting for coach
         <span class="tv-col-count" id="tv-s-open">0</span>
       </div>
-      <div id="tv-topics-open"></div>
+      <div class="tv-col-content" id="tv-topics-open"></div>
     </div>
   </div>
 </div>
@@ -1175,6 +1182,11 @@ async function freeCoach(coachId) {
   } catch(e) {
     console.error('freeCoach save failed:', e);
   }
+}
+
+function toggleTvCol(id) {
+  if (window.innerWidth > 700) return; // only on mobile
+  document.getElementById(id).classList.toggle('collapsed');
 }
 
 function render() {
