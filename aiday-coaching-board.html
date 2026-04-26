@@ -265,6 +265,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 
 /* TV Board – two columns */
 .tv-board { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--wb-border); min-height: calc(100vh - 120px); }
+@media (max-width: 700px) {
+  .tv-board { grid-template-columns: 1fr; }
+  .tv-col { padding: 14px 16px; }
+  .tv-topic { padding: 12px 14px; }
+  .tv-topic-text { font-size: 15px; }
+  .tv-col-header { font-size: 12px; margin-bottom: 12px; }
+}
 .tv-board-3 { grid-template-columns: 1fr 1fr 1fr; }
 .badge-soon { background: rgba(245,158,11,0.15); color: #fbbf24; border: 0.5px solid rgba(245,158,11,0.3); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
 .tv-topic.starting-soon { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.05); }
@@ -487,6 +494,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
     <div class="card">
       <div class="card-title">Open topics</div>
       <div id="m-topics"></div>
+    </div>
+
+    <div class="card" id="m-completed-card" style="display:none">
+      <div class="card-title">Completed topics</div>
+      <div id="m-completed"></div>
     </div>
 
   </div>
@@ -1355,21 +1367,32 @@ function renderMobileTopics() {
       </div>
     </div>`;
   });
-  if (done.length) {
-    html += `<div class="section-sep">Completed (${done.length})</div>`;
-    done.forEach(t => {
-      html += `<div class="m-topic done" style="opacity:.4">
-        <div class="m-topic-owner">Added by ${esc(t.owner)}</div>
-        <div class="m-topic-text">${esc(t.text)}</div>
-        ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
-        <div class="m-topic-footer"><span style="font-size:11px;color:var(--wb-text3)">Done</span>
-        <button class="btn-ghost" onclick="deleteTopic('${t.id}')">remove</button></div>
-      </div>`;
-    });
+  if (!active.length) {
+    el.innerHTML = '<div class="empty-state">No open topics yet.<br>Add yours above!</div>';
+  } else {
+    el.innerHTML = html;
   }
-  el.innerHTML = html;
 
-  // Restore join input values after re-render
+  // Render completed topics in separate card
+  const completedCard = document.getElementById("m-completed-card");
+  const completedEl = document.getElementById("m-completed");
+  if (completedEl) {
+    if (!done.length) {
+      if (completedCard) completedCard.style.display = "none";
+    } else {
+      if (completedCard) completedCard.style.display = "block";
+      completedEl.innerHTML = done.map(t => `
+        <div class="m-topic done" style="opacity:.5">
+          <div class="m-topic-owner">Added by ${esc(t.owner)}</div>
+          <div class="m-topic-text">${esc(t.text)}</div>
+          ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
+          <div class="m-topic-footer">
+            <span style="font-size:11px;color:var(--wb-text3)">Done</span>
+            <button class="btn-ghost" onclick="deleteTopic('${t.id}')">remove</button>
+          </div>
+        </div>`).join("");
+    }
+  }
   Object.entries(savedJoinInputs).forEach(([tid, val]) => {
     const inp = document.getElementById("join-" + tid);
     if (inp) inp.value = val;
