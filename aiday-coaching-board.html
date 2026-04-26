@@ -279,6 +279,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 /* TV topic card – in session gets stronger styling */
 .tv-topic.in-session { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.07); }
 .tv-topic.starting-soon { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.06); }
+.tv-topic.starting-soon.urgent { border-color: rgba(245,158,11,0.7); background: rgba(245,158,11,0.14); box-shadow: 0 0 0 1px rgba(245,158,11,0.3); }
+.tv-topic.starting-soon.urgent .tv-topic-text { color: #fcd34d; }
+.badge-soon-urgent { background: rgba(245,158,11,0.25); color: #fbbf24; border: 0.5px solid rgba(245,158,11,0.5); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
 .tv-topic.in-session .tv-topic-text { color: var(--wb-text); }
 
 /* Confetti */
@@ -432,8 +435,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
   <div id="notif-list"><div class="notif-empty">No notifications yet</div></div>
 </div>
 
-<!-- Upcoming sessions bar -->
-<div class="tv-upcoming" id="tv-upcoming"></div>
 
 <!-- TV VIEW -->
 <div id="view-tv" class="active">
@@ -801,33 +802,6 @@ function checkForNewEvents(oldTopics, newTopics) {
   });
 }
 
-// Update upcoming sessions bar in TV view
-function updateUpcomingBar() {
-  const el = document.getElementById('tv-upcoming');
-  if (!el) return;
-  const now = new Date();
-  const soon = state.topics
-    .filter(t => t.coachId && !t.done && t.startTime && new Date(t.startTime) > now)
-    .sort((a,b) => new Date(a.startTime) - new Date(b.startTime));
-  if (!soon.length) { el.classList.remove('show'); return; }
-  el.classList.add('show');
-  el.innerHTML = '<span class="tv-upcoming-label">&#x23F0; Starting soon</span>' +
-    soon.map(t => {
-      const coach = COACHES.find(c => c.id === t.coachId);
-      const mins = Math.round((new Date(t.startTime) - now) / 60000);
-      return `<span class="tv-upcoming-item"><strong>~${roundUpToFive(t.startTime)}</strong> · ${esc(t.text.slice(0,40))} · ${coach ? esc(coach.name) : ''} · ${esc(t.room||'')}</span>`;
-    }).join('');
-  // Notify for sessions starting in ≤10 min
-  soon.filter(t => {
-    const mins = Math.round((new Date(t.startTime) - now) / 60000);
-    return mins <= 10 && !remindedTopics.has(t.id);
-  }).forEach(t => {
-    const coach = COACHES.find(c => c.id === t.coachId);
-    const mins = Math.round((new Date(t.startTime) - now) / 60000);
-    addNotification('&#x23F0;', `Starting in ${mins} min: "${t.text.slice(0,50)}" · ${coach ? coach.name : ''} · ${t.room||''}`, true);
-    remindedTopics.add(t.id);
-  });
-}
 
 // Init notifs from storage
 renderNotifBadge();
@@ -917,7 +891,6 @@ async function loadFromSupabase() {
   const prevTopics = [...(state.topics || [])];
   render();
   checkForNewEvents(prevTopics, state.topics);
-  updateUpcomingBar();
 
   // Restore dropdown selections after render
   COACHES.forEach(c => {
@@ -1301,7 +1274,10 @@ function renderTvTopics() {
 
   const topicCard = (t, style) => {
     const coach = COACHES.find(c => c.id === t.coachId);
-    return `<div class="tv-topic ${style}">
+    const now = new Date();
+    const isUrgent = style === "starting-soon" && t.startTime && (new Date(t.startTime) - now) / 60000 <= 15;
+    const cardClass = `tv-topic ${style}${isUrgent ? " urgent" : ""}`;
+    return `<div class="${cardClass}">
       <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
       <div class="tv-topic-text">${esc(t.text)}</div>
       ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
@@ -1310,7 +1286,7 @@ function renderTvTopics() {
         ${t.room && t.room !== "Remote only" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}
         ${t.room === "Remote only" ? `<span class="badge badge-remote">Remote only</span>` : ""}
         ${isHybrid(t) ? `<span class="badge badge-hybrid">Hybrid</span>` : ""}
-        ${style === "starting-soon" && t.startTime ? `<span class="badge badge-soon">~${roundUpToFive(t.startTime)}</span>` : ""}
+        ${style === "starting-soon" && t.startTime ? `<span class="badge ${isUrgent ? "badge-soon-urgent" : "badge-soon"}">~${roundUpToFive(t.startTime)}</span>` : ""}
       </div>
     </div>`;
   };
