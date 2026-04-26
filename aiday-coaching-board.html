@@ -557,7 +557,6 @@ async function sendSlack(text, blocks) {
     await fetch(SLACK_WEBHOOK, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, blocks })
     });
     console.log('Slack notification sent');
