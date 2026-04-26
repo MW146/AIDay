@@ -554,11 +554,12 @@ const BOARD_URL = 'https://project-byavi.vercel.app/aiday-coaching-board.html';
 
 async function sendSlack(text, blocks) {
   try {
-    await fetch(SLACK_WEBHOOK, {
+    const res = await fetch(SLACK_WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, blocks })
     });
+    console.log('Slack response:', res.status);
   } catch(e) { console.error('Slack error:', e); }
 }
 
@@ -829,8 +830,10 @@ async function addTopic() {
   try {
     await sbFetch('topics', 'POST', {
       id: t.id, owner: t.owner, participants: t.participants,
-      text: t.text, coach_id: null, room: null, done: false, start_time: null
+      text: t.text, coach_id: null, room: null, done: false, start_time: null,
+      owner_presence: t.ownerPresence || 'onsite', participant_presence: t.participantPresence || {}
     });
+    await notifyNewTopic(t);
   } catch(e) { console.error('addTopic failed:', e); }
 }
 
@@ -1159,7 +1162,10 @@ function renderMobileTopics() {
       </div>` : ""}
       <div class="m-topic-footer">
         ${coach ? `<span class="badge badge-coach">With ${esc(coach.name)}</span>` : `<span class="badge badge-open">Waiting for coach</span>`}
-        ${t.room && t.room !== "Remote only" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}${t.room === "Remote only" ? `<span class="badge badge-remote">Remote only</span>` : ""}
+        ${t.room && t.room !== "Remote only" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}
+        ${t.room === "Remote only" ? `<span class="badge badge-remote">Remote only</span>` : ""}
+        ${isHybrid(t) ? `<span class="badge badge-hybrid">Hybrid</span>` : ""}
+        ${!t.coachId && (t.ownerPresence === "remote" || Object.values(t.participantPresence||{}).some(p=>p==="remote")) ? `<span class="badge badge-remote">Has remote</span>` : ""}
         <button class="btn-ghost" onclick="deleteTopic('${t.id}')">remove</button>
       </div>
     </div>`;
