@@ -1184,6 +1184,8 @@ function renderMobileTopics() {
     if (inp) inp.value = val;
   });
 }
+
+function roundUpTo5(date) {
   const ms = date.getTime();
   const mins = date.getMinutes();
   const remainder = mins % 5;
