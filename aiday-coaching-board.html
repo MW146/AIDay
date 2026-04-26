@@ -660,10 +660,10 @@ if (localStorage.getItem("aiday_version") !== CACHE_VERSION) {
 }
 
 const ROOMS = [
-  "Projector Room &#x1F310;",
-  "Seaview &#x1F310;",
+  "Projector Room 🌐",
+  "Seaview 🌐",
   "Community Room",
-  "Skydeck &#x1F310;",
+  "Skydeck 🌐",
   "UFO",
   "Crazy Cube",
   "Lunch Area",
@@ -1014,40 +1014,8 @@ function renderTvTopics() {
     : '<div class="empty-state">No open topics yet.</div>';
 }
 
-function renderTvCoaches() {
-  const el = document.getElementById("tv-coaches");
-  let html = "";
-  const busy = COACHES.filter(c => state.coaches[c.id].topicId);
-  const free = COACHES.filter(c => !state.coaches[c.id].topicId);
-  if (busy.length) {
-    html += `<div class="section-sep" style="margin-top:0">In session</div>`;
-    busy.forEach(c => {
-      const t = state.topics.find(x => x.id === state.coaches[c.id].topicId);
-      const people = t ? [t.owner, ...t.participants] : [];
-      html += `<div class="tv-coach busy">
-        <div class="avatar av-busy">${c.initials}</div>
-        <div class="coach-info">
-          <div class="coach-name">${esc(c.name)}</div>
-          ${t ? `<div class="coach-session">${esc(t.text.slice(0,60))}${t.text.length>60?"…":""}</div>` : ""}
-        ${t && t.room && t.room !== "Remote only" ? `<div style="font-size:11px;color:#a78bfa;margin-top:2px">${esc(t.room)}</div>` : ""}${t && t.room === "Remote only" ? `<div style="font-size:11px;color:#6ee7b7;margin-top:2px">Remote</div>` : ""}
-          ${people.length ? `<div class="coach-people">${people.map(p=>`<span class="chip chip-joined" style="font-size:10px">${esc(p)}</span>`).join("")}</div>` : ""}
-        </div>
-        <div class="dot dot-busy"></div>
-      </div>`;
-    });
-  }
-  if (free.length) {
-    html += `<div class="section-sep">Available</div>`;
-    free.forEach(c => {
-      html += `<div class="tv-coach">
-        <div class="avatar av-free">${c.initials}</div>
-        <div class="coach-info"><div class="coach-name">${esc(c.name)}</div></div>
-        <div class="dot dot-free"></div>
-      </div>`;
-    });
-  }
-  el.innerHTML = html;
-}
+function renderTvCoaches() { /* removed - coaches not shown in TV view */ }
+
 
 function renderMobileTopics() {
   const el = document.getElementById("m-topics");
