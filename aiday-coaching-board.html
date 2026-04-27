@@ -385,6 +385,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .presence-toggle-sm { padding: 0 10px; height: 36px; font-size: 12px; }
 .chip-remote { background: rgba(45,212,160,0.12); color: #6ee7b7; border: 0.5px solid rgba(45,212,160,0.3); }
 .badge-hybrid { background: rgba(251,146,60,0.12); color: #fb923c; border: 0.5px solid rgba(251,146,60,0.3); font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+.badge-teams { background: rgba(88,101,242,0.15); color: #818cf8; border: 0.5px solid rgba(88,101,242,0.35); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; text-decoration: none; cursor: pointer; }
+.badge-teams:hover { background: rgba(88,101,242,0.25); color: #a5b4fc; }
 
 /* Notification Bell */
 .notif-bell { position: relative; background: var(--wb-surface); border: 0.5px solid var(--wb-border); border-radius: var(--radius); padding: 6px 10px; font-size: 16px; cursor: pointer; color: var(--wb-text2); line-height: 1; display: flex; align-items: center; }
@@ -967,6 +969,12 @@ if (localStorage.getItem("aiday_version") !== CACHE_VERSION) {
   localStorage.setItem("aiday_version", CACHE_VERSION);
 }
 
+const TEAMS_LINKS = {
+  "Projector Room 🌐": "https://teams.microsoft.com/meet/326752103662979?p=qo0rnt6AcoYpiJFf20",
+  "Seaview 🌐": "https://teams.microsoft.com/meet/372617400916793?p=K6twHe7oFoDugQNec2",
+  "Skydeck 🌐": "https://teams.microsoft.com/meet/3905743035854?p=vIERBG27QDwx8dAlze",
+};
+
 const ROOMS = [
   "Projector Room 🌐",
   "Seaview 🌐",
@@ -1311,6 +1319,7 @@ function renderTvTopics() {
         ${t.room === "Remote only" ? `<span class="badge badge-remote">Remote only</span>` : ""}
         ${isHybrid(t) ? `<span class="badge badge-hybrid">Hybrid</span>` : ""}
         ${style === "starting-soon" && t.startTime ? `<span class="badge ${isUrgent ? "badge-soon-urgent" : "badge-soon"}">~${roundUpToFive(t.startTime)}</span>` : ""}
+        ${TEAMS_LINKS[t.room] ? `<a href="${TEAMS_LINKS[t.room]}" target="_blank" class="badge badge-teams">&#x1F4BB; Join Teams</a>` : ""}
       </div>
     </div>`;
   };
