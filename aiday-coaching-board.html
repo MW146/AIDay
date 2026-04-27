@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>AI Day — Coaching Board</title>
 <style>
@@ -295,6 +297,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .tv-topic.starting-soon { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.06); }
 .tv-topic.starting-soon.urgent { border-color: rgba(245,158,11,0.7); background: rgba(245,158,11,0.14); box-shadow: 0 0 0 1px rgba(245,158,11,0.3); }
 .tv-topic.starting-soon.urgent .tv-topic-text { color: #fcd34d; }
+.tv-card-meta { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--wb-border); }
+.tv-meta-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.tv-meta-label { font-size: 11px; color: var(--wb-text3); text-transform: uppercase; letter-spacing: 0.05em; min-width: 38px; }
 .badge-soon-urgent { background: rgba(245,158,11,0.25); color: #fbbf24; border: 0.5px solid rgba(245,158,11,0.5); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
 .tv-topic.in-session .tv-topic-text { color: var(--wb-text); }
 
@@ -394,7 +399,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .notif-badge { position: absolute; top: -4px; right: -4px; background: #7c3aed; color: white; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
 /* Notification Center */
-.notif-center { position: fixed; top: 52px; right: 16px; width: 340px; background: var(--wb-dark); border: 0.5px solid rgba(124,58,237,0.35); border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 500; max-height: 480px; display: flex; flex-direction: column; }
+.notif-center { position: fixed; top: 52px; right: 16px; width: 340px; background: var(--wb-dark); border: 0.5px solid rgba(124,58,237,0.35); border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 500; max-height: 480px; display: flex; flex-direction: column; pointer-events: none; }
+.notif-center[style*="flex"] { pointer-events: all; }
 .notif-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 0.5px solid var(--wb-border); }
 .notif-title { font-size: 13px; font-weight: 600; color: var(--wb-text); }
 .notif-clear { font-size: 12px; color: var(--wb-text3); background: none; border: none; cursor: pointer; }
@@ -417,6 +423,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .tv-upcoming-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #fbbf24; white-space: nowrap; }
 .tv-upcoming-item { font-size: 13px; color: var(--wb-text); background: rgba(245,158,11,0.12); border: 0.5px solid rgba(245,158,11,0.25); border-radius: var(--radius); padding: 4px 12px; }
 .tv-upcoming-item strong { color: #fbbf24; }
+
+/* Mobile touch targets */
+@media (max-width: 900px) {
+  .vt-btn, .btn-add-plus, .notif-bell { min-height: 44px; min-width: 44px; }
+  .btn-accent { min-height: 48px; font-size: 16px; } /* prevent iOS zoom on focus */
+  .wb-input, .wb-textarea, .wb-select, .join-input, .assign-select { font-size: 16px !important; } /* prevent iOS zoom */
+  .btn-join, .btn-take, .btn-done, .btn-free { min-height: 44px; }
+  input, textarea, select { font-size: 16px !important; } /* critical: prevents iOS auto-zoom */
+}
 </style>
 </head>
 <body>
@@ -699,10 +714,10 @@ setInterval(checkUpcomingSessions, 60000);
 
 
 // ── NOTIFICATION CENTER ──
-const notifications = JSON.parse(localStorage.getItem('aiday_notifs') || '[]');
+const notifications = (() => { try { return JSON.parse(localStorage.getItem('aiday_notifs') || '[]'); } catch(e) { return []; } })();
 let unreadCount = 0;
 
-function saveNotifs() { localStorage.setItem('aiday_notifs', JSON.stringify(notifications.slice(0, 50))); }
+function saveNotifs() { try { localStorage.setItem('aiday_notifs', JSON.stringify(notifications.slice(0, 50))); } catch(e) {} }
 
 function addNotification(icon, text, urgent = false, topicId = null) {
   const n = { id: uid(), icon, text, urgent, time: Date.now(), read: false, topicId };
@@ -711,10 +726,12 @@ function addNotification(icon, text, urgent = false, topicId = null) {
   saveNotifs();
   renderNotifBadge();
   renderNotifList();
-  // Browser push notification
-  if (Notification.permission === 'granted') {
-    new Notification('AIDay Board', { body: text, icon: '/favicon.ico' });
-  }
+  // Browser push notification - safely
+  try {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      new Notification('AIDay Board', { body: text, icon: '/favicon.ico' });
+    }
+  } catch(e) {}
 }
 
 function renderNotifBadge() {
@@ -794,10 +811,14 @@ function formatRelTime(ts) {
   return Math.round(diff/60) + 'h ago';
 }
 
-// Request browser notification permission
-if (Notification.permission === 'default') {
-  setTimeout(() => Notification.requestPermission(), 3000);
-}
+// Request browser notification permission - safely
+try {
+  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+    setTimeout(() => {
+      try { Notification.requestPermission(); } catch(e) { console.log('Notifications not supported'); }
+    }, 3000);
+  }
+} catch(e) { console.log('Notifications not supported'); }
 
 // Track known topic IDs to detect new ones
 let knownTopicIds = new Set();
@@ -851,20 +872,25 @@ const SUPABASE_URL = 'https://bbkbaflxsxqkzftgsrss.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QoAjkkrAo-PHrlhOFrVSAQ_osxfhCM7';
 
 async function sbFetch(path, method='GET', body=null) {
-  const opts = {
-    method,
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
-    }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
-  if (method === 'GET') return res.json();
-  if (!res.ok) { const err = await res.text(); console.error('Supabase error:', err); }
-  return res;
+  try {
+    const opts = {
+      method,
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
+      }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+    if (method === 'GET') return res.json();
+    if (!res.ok) { const err = await res.text(); console.error('Supabase error:', err); }
+    return res;
+  } catch(e) {
+    console.error('sbFetch error:', e);
+    return null;
+  }
 }
 
 async function loadFromSupabase() {
@@ -883,6 +909,7 @@ async function loadFromSupabase() {
     }
   });
 
+  try {
   const [topics, coaches] = await Promise.all([
     sbFetch('topics?select=*&order=created_at.desc'),
     sbFetch('coach_state?select=*')
@@ -923,6 +950,10 @@ async function loadFromSupabase() {
       if (delaySel && savedSelections[c.id].delay) delaySel.value = savedSelections[c.id].delay;
     }
   });
+  } catch(e) {
+    console.error('loadFromSupabase error:', e);
+    render(); // still render with existing state
+  }
 }
 
 async function saveTopic(t) {
@@ -964,10 +995,12 @@ async function saveCoach(coachId) {
 }
 
 const CACHE_VERSION = "v2";
-if (localStorage.getItem("aiday_version") !== CACHE_VERSION) {
-  localStorage.removeItem("aiday_wb");
-  localStorage.setItem("aiday_version", CACHE_VERSION);
-}
+try {
+  if (localStorage.getItem("aiday_version") !== CACHE_VERSION) {
+    localStorage.removeItem("aiday_wb");
+    localStorage.setItem("aiday_version", CACHE_VERSION);
+  }
+} catch(e) {}
 
 const TEAMS_LINKS = {
   "Projector Room 🌐": "https://teams.microsoft.com/meet/326752103662979?p=qo0rnt6AcoYpiJFf20",
@@ -1017,7 +1050,7 @@ function load() {} // replaced by Supabase
 function uid() { return "t" + Date.now() + Math.random().toString(36).slice(2,6); }
 function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
-async function addTopic() {
+async function addTopic() { try {
   const name = document.getElementById("inp-name").value.trim();
   const text = document.getElementById("inp-topic").value.trim();
   if (!name || !text) { alert("Please enter your name and describe your topic."); return; }
@@ -1040,6 +1073,7 @@ async function addTopic() {
     });
     await notifyNewTopic(t);
   } catch(e) { console.error('addTopic failed:', e); }
+  } catch(e) { console.error('addTopic error:', e); }
 }
 
 async function joinTopic(tid) {
@@ -1313,13 +1347,21 @@ function renderTvTopics() {
       <div class="tv-topic-owner">Added by ${esc(t.owner)}</div>
       <div class="tv-topic-text">${esc(t.text)}</div>
       ${chipsHtml(t.owner, t.participants, t.ownerPresence, t.participantPresence)}
-      <div class="tv-topic-footer">
-        ${coach ? `<span class="badge badge-coach">With ${esc(coach.name)}</span>` : ""}
-        ${t.room && t.room !== "Remote only" ? `<span class="badge badge-room">${esc(t.room)}</span>` : ""}
-        ${t.room === "Remote only" ? `<span class="badge badge-remote">Remote only</span>` : ""}
-        ${isHybrid(t) ? `<span class="badge badge-hybrid">Hybrid</span>` : ""}
-        ${style === "starting-soon" && t.startTime ? `<span class="badge ${isUrgent ? "badge-soon-urgent" : "badge-soon"}">~${roundUpToFive(t.startTime)}</span>` : ""}
-        ${TEAMS_LINKS[t.room] ? `<a href="${TEAMS_LINKS[t.room]}" target="_blank" class="badge badge-teams">&#x1F4BB; Join Teams</a>` : ""}
+      <div class="tv-card-meta">
+        ${coach ? `<div class="tv-meta-row">
+          <span class="tv-meta-label">Coach</span>
+          <span class="badge badge-coach">With ${esc(coach.name)}</span>
+        </div>` : ""}
+        ${t.room ? `<div class="tv-meta-row">
+          <span class="tv-meta-label">Room</span>
+          <span class="badge ${t.room === "Remote only" ? "badge-remote" : "badge-room"}">${esc(t.room)}</span>
+          ${isHybrid(t) ? `<span class="badge badge-hybrid">Hybrid</span>` : ""}
+          ${TEAMS_LINKS[t.room] ? `<a href="${TEAMS_LINKS[t.room]}" target="_blank" class="badge badge-teams">Join Teams</a>` : ""}
+        </div>` : ""}
+        ${style === "starting-soon" && t.startTime ? `<div class="tv-meta-row">
+          <span class="tv-meta-label">Starts</span>
+          <span class="badge ${isUrgent ? "badge-soon-urgent" : "badge-soon"}">~${roundUpToFive(t.startTime)}</span>
+        </div>` : ""}
       </div>
     </div>`;
   };
