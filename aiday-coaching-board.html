@@ -457,7 +457,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
       <button class="vt-btn active" id="btn-tv" onclick="switchView('tv')">Session overview</button>
       <button class="vt-btn" id="btn-coach" onclick="switchView('coach')">Coaches</button>
     </div>
-    <button class="vt-btn btn-add-plus" id="btn-mobile" onclick="switchView('mobile')" title="Add topic">+</button>
+    <button class="vt-btn btn-add-plus" id="btn-mobile" onclick="switchView('mobile')" title="Add request">+</button>
     <button class="notif-bell" id="notif-bell" onclick="toggleNotifCenter()" title="Notifications">
       &#x1F514;
       <span class="notif-badge" id="notif-badge" style="display:none">0</span>
@@ -512,7 +512,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
   <div class="mobile-layout">
 
     <div class="card">
-      <div class="card-title">Add your topic</div>
+      <div class="card-title">Add your coaching request</div>
       <div class="field-label">Your name</div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <input class="wb-input" id="inp-name" placeholder="e.g. Max Mustermann" maxlength="60" style="margin-bottom:0;flex:1" />
@@ -522,11 +522,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
       </div>
       <div class="field-label">What do you need help with?</div>
       <textarea class="wb-textarea" id="inp-topic" placeholder="Describe the use case or challenge you'd like to work on…" maxlength="300"></textarea>
-      <button class="btn-accent" onclick="addTopic()">Add topic</button>
+      <button class="btn-accent" onclick="addTopic()">Add request</button>
     </div>
 
     <div class="card">
-      <div class="card-title">Open topics</div>
+      <div class="card-title">Open requests</div>
       <div id="m-topics"></div>
     </div>
 
@@ -657,11 +657,11 @@ async function sendSlack(text, blocks) {
 
 async function notifyNewTopic(t) {
   await sendSlack(
-    `New topic: ${t.text}`,
+    `New coaching request: ${t.text}`,
     [
       {
         type: "section",
-        text: { type: "mrkdwn", text: `*📌 New topic added by ${t.owner}*\n\n_"${t.text}"_` }
+        text: { type: "mrkdwn", text: `*📌 New coaching request added by ${t.owner}*\n\n_"${t.text}"_` }
       },
       {
         type: "section",
@@ -774,7 +774,7 @@ function notifClick(id) {
   if (!n) return;
   markRead(id);
   if (n.topicId) {
-    // Close notification center, switch to Add topic tab, scroll to topic
+    // Close notification center, switch to Add request tab, scroll to topic
     document.getElementById('notif-center').style.display = 'none';
     switchView('mobile');
     setTimeout(() => {
@@ -835,10 +835,10 @@ let knownTopicIds = new Set();
 let knownSessionIds = new Set();
 
 function checkForNewEvents(oldTopics, newTopics) {
-  // New topics added
+  // New coaching requests added
   newTopics.filter(t => !t.done && !knownTopicIds.has(t.id)).forEach(t => {
     if (knownTopicIds.size > 0) { // skip on first load
-      addNotification('&#x1F4CC;', `New topic by ${t.owner}: "${t.text.slice(0,60)}${t.text.length>60?'…':''}"`, false, t.id);
+      addNotification('&#x1F4CC;', `New coaching request by ${t.owner}: "${t.text.slice(0,60)}${t.text.length>60?'…':''}"`, false, t.id);
     }
     knownTopicIds.add(t.id);
   });
@@ -1266,9 +1266,9 @@ function renderFilterPanel() {
   let html = "";
 
   if (activeFilter === "open") {
-    titleEl.textContent = "Open topics — waiting for a coach";
+    titleEl.textContent = "Open requests — waiting for a coach";
     const topics = state.topics.filter(t => !t.coachId && !t.done);
-    if (!topics.length) { el.innerHTML = '<div class="filter-empty">No open topics right now.</div>'; return; }
+    if (!topics.length) { el.innerHTML = '<div class="filter-empty">No open requests right now.</div>'; return; }
     topics.forEach(t => {
       const people = [t.owner, ...t.participants];
       html += `<div class="filter-card">
@@ -1394,7 +1394,7 @@ function renderTvTopics() {
           <button style="font-size:12px;color:#ff5a5a;background:rgba(255,90,90,0.1);border:0.5px solid rgba(255,90,90,0.3);cursor:pointer;padding:3px 10px;border-radius:6px" onclick="deleteTopic('${t.id}')">remove</button>
         </div>
       </div>`).join("")
-    : '<div class="empty-state">No open topics yet.</div>';
+    : '<div class="empty-state">No open requests yet.</div>';
 }
 
 function renderTvCoaches() { /* removed - coaches not shown in TV view */ }
@@ -1413,7 +1413,7 @@ function renderMobileTopics() {
   const active = state.topics.filter(t => !t.done);
   const done = state.topics.filter(t => t.done);
   if (!active.length && !done.length) {
-    el.innerHTML = '<div class="empty-state">No topics yet.<br>Add yours above!</div>'; return;
+    el.innerHTML = '<div class="empty-state">No requests yet.<br>Add yours above!</div>'; return;
   }
   let html = "";
   active.forEach(t => {
@@ -1441,7 +1441,7 @@ function renderMobileTopics() {
     </div>`;
   });
   if (!active.length) {
-    el.innerHTML = '<div class="empty-state">No open topics yet.<br>Add yours above!</div>';
+    el.innerHTML = '<div class="empty-state">No open requests yet.<br>Add yours above!</div>';
   } else {
     el.innerHTML = html;
   }
@@ -1608,7 +1608,7 @@ function renderMobileCoaches() {
   // ── ACCORDION 2: TAKE A TOPIC ──
   let freeBody = "";
   if (!openTopics.length) {
-    freeBody = `<div class="coaches-no-topics">No open topics yet — participants can add them in "Add topic".</div>`;
+    freeBody = `<div class="coaches-no-topics">No open requests yet — participants can add them in "Add request".</div>`;
   } else if (!freeCoaches.length) {
     freeBody = `<div class="coaches-no-topics">All coaches are currently in session.</div>`;
   } else {
