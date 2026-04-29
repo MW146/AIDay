@@ -709,7 +709,7 @@ function checkUpcomingSessions() {
     if (remindedTopics.has(t.id)) return;
     const start = new Date(t.startTime);
     const minsLeft = Math.round((start - now) / 60000);
-    if (minsLeft <= 10 && minsLeft > 0) {
+    if (minsLeft === 10) {
       const coach = COACHES.find(c => c.id === t.coachId);
       if (coach) {
         notifySessionSoon(t, coach, minsLeft);
