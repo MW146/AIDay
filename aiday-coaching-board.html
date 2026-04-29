@@ -708,8 +708,8 @@ function checkUpcomingSessions() {
   state.topics.filter(t => t.coachId && !t.done && t.startTime).forEach(t => {
     if (remindedTopics.has(t.id)) return;
     const start = new Date(t.startTime);
-    const minsLeft = Math.round((start - now) / 60000);
-    if (minsLeft === 10) {
+    const minsLeft = (start - now) / 60000;
+if (minsLeft <= 10 && minsLeft > 9) {
       const coach = COACHES.find(c => c.id === t.coachId);
       if (coach) {
         notifySessionSoon(t, coach, minsLeft);
