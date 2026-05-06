@@ -71,7 +71,7 @@ textarea{resize:vertical;min-height:72px}
 
 /* CARDS */
 .cards{display:flex;flex-direction:row;flex-wrap:wrap;gap:12px;align-items:stretch}
-.card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 15px;transition:border-color .18s;flex:1 1 300px;max-width:380px;display:flex;flex-direction:column}
+.card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 15px;transition:border-color .18s;flex:1 1 300px;max-width:380px;display:flex;flex-direction:column;position:relative}
 .card:hover{border-color:rgba(124,106,247,.28);border-left-color:var(--accent)}
 .card.planned{border-left-color:var(--amber)}
 .card.done{border-left-color:var(--green);opacity:.5}
@@ -525,8 +525,8 @@ function cardHTML(r){
   if(r.status==='open'){
     btns='<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
   } else {
-    btns='<button class="btn-sm btn-edit" onclick="editRequest(\''+r.id+'\')">Edit</button>'
-        +'<button class="btn-sm btn-done" onclick="markDone(\''+r.id+'\')">Mark Done</button>'
+    btns='<button class="btn-sm btn-edit" onclick="editRequest(\''+r.id+'\')" style="position:absolute;top:12px;right:12px;padding:4px 10px;font-size:11px">Edit</button>'
+        +'<button onclick="markDone(\''+r.id+'\')" style="width:100%;background:linear-gradient(135deg,#7c6af7,#9b8bf5);border:none;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;border-radius:8px;cursor:pointer;margin-bottom:8px">Mark Done</button>'
         +'<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
   }
 
