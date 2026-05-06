@@ -360,7 +360,7 @@ async function syncFromSupabase(){
   try{
     const rows=await sbGet();
     if(!rows||rows.error) return;
-    D.requests=rows.map(r=>({
+    const newRequests=rows.map(r=>({
       id:r.id,
       name:r.name,
       topic:r.topic,
@@ -374,6 +374,10 @@ async function syncFromSupabase(){
       participants:r.participants||[],
       ts:r.created_at
     }));
+    const newJSON=JSON.stringify(newRequests);
+    const oldJSON=JSON.stringify(D.requests);
+    if(newJSON===oldJSON) return;
+    D.requests=newRequests;
     save();
     render();
   } catch(e){ console.error('sync error',e); }
