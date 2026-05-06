@@ -206,16 +206,30 @@ textarea{resize:vertical;min-height:72px}
         <input type="date" id="m-date">
       </div>
       <div>
-        <label for="m-time">Time</label>
-        <input type="time" id="m-time">
+        <label>Time</label>
+        <div style="display:flex;gap:5px">
+          <select id="m-hour" style="flex:1">
+            <option value="">hh</option>
+            <option>08</option><option>09</option><option>10</option><option>11</option>
+            <option>12</option><option>13</option><option>14</option><option>15</option>
+            <option>16</option><option>17</option>
+          </select>
+          <select id="m-min" style="flex:1">
+            <option value="">mm</option>
+            <option>00</option><option>15</option><option>30</option><option>45</option>
+          </select>
+        </div>
       </div>
       <div>
         <label for="m-room">Room</label>
         <select id="m-room">
           <option value="">&#8212; select &#8212;</option>
-          <option value="Remote Option">Remote Option</option>
           <option value="Remote Only">Remote Only</option>
           <option value="Community Room">Community Room</option>
+          <option value="Skydeck">Skydeck</option>
+          <option value="Projector Room">Projector Room</option>
+          <option value="Seaview">Seaview</option>
+          <option value="UFO">UFO</option>
         </select>
       </div>
     </div>
@@ -244,16 +258,30 @@ textarea{resize:vertical;min-height:72px}
         <input type="date" id="e-date">
       </div>
       <div>
-        <label for="e-time">Time</label>
-        <input type="time" id="e-time">
+        <label>Time</label>
+        <div style="display:flex;gap:5px">
+          <select id="e-hour" style="flex:1">
+            <option value="">hh</option>
+            <option>08</option><option>09</option><option>10</option><option>11</option>
+            <option>12</option><option>13</option><option>14</option><option>15</option>
+            <option>16</option><option>17</option>
+          </select>
+          <select id="e-min" style="flex:1">
+            <option value="">mm</option>
+            <option>00</option><option>15</option><option>30</option><option>45</option>
+          </select>
+        </div>
       </div>
       <div>
         <label for="e-room">Room</label>
         <select id="e-room">
           <option value="">&#8212; select &#8212;</option>
-          <option value="Remote Option">Remote Option</option>
           <option value="Remote Only">Remote Only</option>
           <option value="Community Room">Community Room</option>
+          <option value="Skydeck">Skydeck</option>
+          <option value="Projector Room">Projector Room</option>
+          <option value="Seaview">Seaview</option>
+          <option value="UFO">UFO</option>
         </select>
       </div>
     </div>
@@ -335,7 +363,8 @@ function submitRequest(){
 // TAKE
 function takeRequest(id){
   pendingTake=id;
-  ['m-coach','m-date','m-time','m-link'].forEach(i=>{ document.getElementById(i).value=''; document.getElementById(i).style.borderColor=''; });
+  ['m-coach','m-date','m-link'].forEach(i=>{ document.getElementById(i).value=''; document.getElementById(i).style.borderColor=''; });
+  document.getElementById('m-hour').value=''; document.getElementById('m-min').value='';
   document.getElementById('m-room').value='';
   document.getElementById('take-modal').classList.add('open');
   setTimeout(()=>document.getElementById('m-coach').focus(),80);
@@ -349,7 +378,8 @@ function confirmTake(){
     r.status='planned';
     r.coach=coach;
     r.date=document.getElementById('m-date').value;
-    r.time=document.getElementById('m-time').value;
+    const mh=document.getElementById('m-hour').value; const mm=document.getElementById('m-min').value;
+    r.time=(mh&&mm)?mh+':'+mm:'';
     r.room=document.getElementById('m-room').value;
     r.link=document.getElementById('m-link').value.trim();
     save(); render();
@@ -365,7 +395,7 @@ function editRequest(id){
   if(!r) return;
   document.getElementById('e-coach').value=r.coach||'';
   document.getElementById('e-date').value=r.date||'';
-  document.getElementById('e-time').value=r.time||'';
+  const tp=(r.time||'').split(':'); document.getElementById('e-hour').value=tp[0]||''; document.getElementById('e-min').value=tp[1]||'';
   document.getElementById('e-room').value=r.room||'';
   document.getElementById('e-link').value=r.link||'';
   document.getElementById('edit-modal').classList.add('open');
@@ -378,7 +408,8 @@ function confirmEdit(){
   if(r){
     r.coach=coach;
     r.date=document.getElementById('e-date').value;
-    r.time=document.getElementById('e-time').value;
+    const eh=document.getElementById('e-hour').value; const em=document.getElementById('e-min').value;
+    r.time=(eh&&em)?eh+':'+em:'';
     r.room=document.getElementById('e-room').value;
     r.link=document.getElementById('e-link').value.trim();
     save(); render();
@@ -436,9 +467,9 @@ function cardHTML(r){
         +'<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
   }
 
-  // participants (planned only)
+  // participants (open and planned)
   let participants='';
-  if(r.status==='planned'){
+  if(r.status==='open'||r.status==='planned'){
     const chips=(r.participants||[]).map(p=>
       '<span class="chip">'+p+'<button class="chip-x" onclick="removeP(\''+r.id+'\',\''+p.replace(/'/g,"\\'")+'\')"> &times;</button></span>'
     ).join('');
