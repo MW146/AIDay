@@ -307,6 +307,36 @@ select{color:var(--text);appearance:none;-webkit-appearance:none;background-imag
 </div>
 
 <script>
+const SUPA_URL='https://bbkbaflxsxqkzftgsrss.supabase.co';
+const SUPA_KEY='sb_publishable_QoAjkkrAo-PHrlhOFrVSAQ_osxfhCM7';
+
+async function sbGet(){
+  const res=await fetch(SUPA_URL+'/rest/v1/coaching_requests?select=*&order=created_at.asc',{
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+  return res.json();
+}
+async function sbInsert(r){
+  await fetch(SUPA_URL+'/rest/v1/coaching_requests',{
+    method:'POST',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify(r)
+  });
+}
+async function sbUpdate(id,fields){
+  await fetch(SUPA_URL+'/rest/v1/coaching_requests?id=eq.'+id,{
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify(fields)
+  });
+}
+async function sbDelete(id){
+  await fetch(SUPA_URL+'/rest/v1/coaching_requests?id=eq.'+id,{
+    method:'DELETE',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+}
+
 const KEY='cbv5';
 let D={requests:[]};
 let pendingTake=null;
@@ -322,6 +352,28 @@ function load(){
 function save(){
   try{ localStorage.setItem(KEY,JSON.stringify(D)); }
   catch(e){}
+}
+async function syncFromSupabase(){
+  try{
+    const rows=await sbGet();
+    if(!rows||rows.error) return;
+    D.requests=rows.map(r=>({
+      id:r.id,
+      name:r.name,
+      topic:r.topic,
+      desc:r.description,
+      status:r.status,
+      coach:r.coach,
+      date:r.date,
+      time:r.time,
+      room:r.room,
+      link:r.link,
+      participants:r.participants||[],
+      ts:r.created_at
+    }));
+    save();
+    render();
+  } catch(e){ console.error('sync error',e); }
 }
 
 function formatDate(ts){
@@ -357,8 +409,10 @@ function submitRequest(){
   document.getElementById('rq-name').style.borderColor=name?'':'var(--red)';
   document.getElementById('rq-topic').style.borderColor=topic?'':'var(--red)';
   if(!name||!topic) return;
-  D.requests.unshift({id:Date.now().toString(),name,topic,desc,status:'open',coach:null,date:'',time:'',room:'',link:'',participants:[],ts:Date.now()});
+  const newReq={id:Date.now().toString(),name,topic,desc,status:'open',coach:null,date:'',time:'',room:'',link:'',participants:[],ts:Date.now()};
+  D.requests.unshift(newReq);
   save(); render();
+  sbInsert({id:newReq.id,name:newReq.name,topic:newReq.topic,description:newReq.desc,status:'open',coach:null,date:'',time:'',room:'',link:'',participants:[],created_at:newReq.ts}).catch(console.error);
   ['rq-name','rq-topic','rq-desc'].forEach(i=>document.getElementById(i).value='');
   closeForm();
   toast('Request submitted!');
@@ -385,6 +439,7 @@ function confirmTake(){
     r.room=document.getElementById('m-room').value;
     r.link=document.getElementById('m-link').value.trim();
     save(); render();
+    sbUpdate(r.id,{status:'planned',coach:r.coach,date:r.date,time:r.time,room:r.room,link:r.link}).catch(console.error);
   }
   closeModal('take-modal');
   toast('Session planned!');
@@ -422,9 +477,10 @@ function confirmEdit(){
 // DONE / DELETE
 function markDone(id){
   const r=D.requests.find(x=>x.id===id);
-  if(r){ r.status='done'; save(); render(); toast('Marked as done \u2713'); }
+  if(r){ r.status='done'; save(); render(); toast('Marked as done ✓'); sbUpdate(r.id,{status:'done'}).catch(console.error); }
 }
 function deleteRequest(id){
+  sbDelete(id).catch(console.error);
   D.requests=D.requests.filter(x=>x.id!==id);
   save(); render();
 }
@@ -436,12 +492,12 @@ function joinSession(id){
   if(!name){ inp.style.borderColor='var(--red)'; return; }
   inp.style.borderColor='';
   const r=D.requests.find(x=>x.id===id);
-  if(r&&r.participants.indexOf(name)===-1){ r.participants.push(name); save(); render(); toast(name+' joined!'); }
+  if(r&&r.participants.indexOf(name)===-1){ r.participants.push(name); save(); render(); toast(name+' joined!'); sbUpdate(r.id,{participants:r.participants}).catch(console.error); }
   else if(r) inp.style.borderColor='var(--amber)';
 }
 function removeP(id,name){
   const r=D.requests.find(x=>x.id===id);
-  if(r){ r.participants=r.participants.filter(p=>p!==name); save(); render(); }
+  if(r){ r.participants=r.participants.filter(p=>p!==name); save(); render(); sbUpdate(r.id,{participants:r.participants}).catch(console.error); }
 }
 
 // RENDER
@@ -511,6 +567,8 @@ function render(){
 document.addEventListener('DOMContentLoaded', function(){
   load();
   render();
+  syncFromSupabase();
+  setInterval(syncFromSupabase, 10000);
 });
 </script>
 </body>
