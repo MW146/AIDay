@@ -84,7 +84,7 @@ textarea{resize:vertical;min-height:72px}
 .c-topic{font-size:13px;font-weight:500;margin-bottom:3px}
 .c-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:6px}
 
-.c-bot{border-top:1px solid var(--border);padding-top:10px;margin-top:10px;display:flex;flex-direction:column;gap:0}
+.c-bot{border-top:1px solid var(--border);padding-top:10px;margin-top:10px;display:flex;flex-direction:column;gap:0}.card.open .c-bot{border-top:1px solid var(--border);padding-top:0;margin-top:10px}.card.open{padding-bottom:0;overflow:hidden}
 .c-meta{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
 .c-meta strong{color:var(--amber)}
 .c-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;margin-top:8px}
@@ -533,10 +533,10 @@ function cardHTML(r){
       '<span class="chip">'+p+'<button class="chip-x" onclick="removeP(\''+r.id+'\',\''+p.replace(/'/g,"\\'")+'\')"> &times;</button></span>'
     ).join('');
     // Interested section
-    const intSection='<div class="p-sec">'
-      +'<div class="p-lbl">Interested? Add your name</div>'
+    const intSection='<div class="interested-section">'
+      +'<div class="p-lbl" style="margin-bottom:8px">Interested? Add your name</div>'
       +((r.participants||[]).length?'<div class="p-list">'+chips+'</div>':'')
-      +'<div class="join-row"><input class="join-inp" id="ji-'+r.id+'" type="text" placeholder="Your name..." autocomplete="off" onkeydown="if(event.key===\'Enter\')joinSession(\''+r.id+'\')"><button class="btn-join" onclick="joinSession(\''+r.id+'\')">Join</button></div>'
+      +'<div class="join-row" style="margin-bottom:0"><input class="join-inp" id="ji-'+r.id+'" type="text" placeholder="Your name..." autocomplete="off" onkeydown="if(event.key===\'Enter\')joinSession(\''+r.id+'\')"><button class="btn-join" onclick="joinSession(\''+r.id+'\')">Join</button></div>'
       +'</div>';
     // Coach section (only on open cards)
     const coachSection = r.status==='open'
