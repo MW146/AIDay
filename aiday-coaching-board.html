@@ -533,16 +533,16 @@ function cardHTML(r){
       '<span class="chip">'+p+'<button class="chip-x" onclick="removeP(\''+r.id+'\',\''+p.replace(/'/g,"\\'")+'\')"> &times;</button></span>'
     ).join('');
     // Interested section
-    const intSection='<div class="interested-section">'
-      +'<div class="p-lbl" style="margin-bottom:8px">Interested? Add your name</div>'
+    const intSection='<div style="padding:14px 16px;background:var(--surface2);border-top:1px solid var(--border)">'
+      +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-family:var(--fh);font-weight:700">Interested? Add your name</div>'
       +((r.participants||[]).length?'<div class="p-list">'+chips+'</div>':'')
       +'<div class="join-row" style="margin-bottom:0"><input class="join-inp" id="ji-'+r.id+'" type="text" placeholder="Your name..." autocomplete="off" onkeydown="if(event.key===\'Enter\')joinSession(\''+r.id+'\')"><button class="btn-join" onclick="joinSession(\''+r.id+'\')">Join</button></div>'
       +'</div>';
     // Coach section (only on open cards)
     const coachSection = r.status==='open'
-      ? '<div class="coach-section">'
-        +'<div class="coach-label">Are you a coach?</div>'
-        +'<button class="btn-take-full" onclick="takeRequest(\''+r.id+'\')">Take this request</button>'
+      ? '<div style="padding:14px 16px;background:var(--surface2);border-top:1px solid var(--border)">'
+        +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-family:var(--fh);font-weight:700">Are you a coach?</div>'
+        +'<button onclick="takeRequest(\''+r.id+'\')" style="width:100%;background:linear-gradient(135deg,#7c6af7,#9b8bf5);border:none;border-radius:8px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;cursor:pointer;letter-spacing:.02em">Take this request</button>'
         +'</div>'
       : '';
     participants = intSection + coachSection;
