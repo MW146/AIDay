@@ -130,7 +130,7 @@ textarea{resize:vertical;min-height:72px}
 .empty p{font-size:13px}
 
 
-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(238,238,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+select{color:var(--text);appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(238,238,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
@@ -208,19 +208,20 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
         <input type="date" id="m-date">
       </div>
       <div>
-        <label>Time</label>
-        <div style="display:flex;gap:5px">
-          <select id="m-hour" style="flex:1">
-            <option value="">&#8212;</option>
-            <option>08</option><option>09</option><option>10</option><option>11</option>
-            <option>12</option><option>13</option><option>14</option><option>15</option>
-            <option>16</option><option>17</option>
-          </select>
-          <select id="m-min" style="flex:1">
-            <option value="">&#8212;</option>
-            <option>00</option><option>15</option><option>30</option><option>45</option>
-          </select>
-        </div>
+        <label for="m-time">Time</label>
+        <select id="m-time">
+          <option value="">&#8212;</option>
+          <option value="08:00">08:00</option><option value="08:15">08:15</option><option value="08:30">08:30</option><option value="08:45">08:45</option>
+          <option value="09:00">09:00</option><option value="09:15">09:15</option><option value="09:30">09:30</option><option value="09:45">09:45</option>
+          <option value="10:00">10:00</option><option value="10:15">10:15</option><option value="10:30">10:30</option><option value="10:45">10:45</option>
+          <option value="11:00">11:00</option><option value="11:15">11:15</option><option value="11:30">11:30</option><option value="11:45">11:45</option>
+          <option value="12:00">12:00</option><option value="12:15">12:15</option><option value="12:30">12:30</option><option value="12:45">12:45</option>
+          <option value="13:00">13:00</option><option value="13:15">13:15</option><option value="13:30">13:30</option><option value="13:45">13:45</option>
+          <option value="14:00">14:00</option><option value="14:15">14:15</option><option value="14:30">14:30</option><option value="14:45">14:45</option>
+          <option value="15:00">15:00</option><option value="15:15">15:15</option><option value="15:30">15:30</option><option value="15:45">15:45</option>
+          <option value="16:00">16:00</option><option value="16:15">16:15</option><option value="16:30">16:30</option><option value="16:45">16:45</option>
+          <option value="17:00">17:00</option>
+        </select>
       </div>
       <div>
         <label for="m-room">Room</label>
@@ -260,19 +261,20 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
         <input type="date" id="e-date">
       </div>
       <div>
-        <label>Time</label>
-        <div style="display:flex;gap:5px">
-          <select id="e-hour" style="flex:1">
-            <option value="">&#8212;</option>
-            <option>08</option><option>09</option><option>10</option><option>11</option>
-            <option>12</option><option>13</option><option>14</option><option>15</option>
-            <option>16</option><option>17</option>
-          </select>
-          <select id="e-min" style="flex:1">
-            <option value="">&#8212;</option>
-            <option>00</option><option>15</option><option>30</option><option>45</option>
-          </select>
-        </div>
+        <label for="e-time">Time</label>
+        <select id="e-time">
+          <option value="">&#8212;</option>
+          <option value="08:00">08:00</option><option value="08:15">08:15</option><option value="08:30">08:30</option><option value="08:45">08:45</option>
+          <option value="09:00">09:00</option><option value="09:15">09:15</option><option value="09:30">09:30</option><option value="09:45">09:45</option>
+          <option value="10:00">10:00</option><option value="10:15">10:15</option><option value="10:30">10:30</option><option value="10:45">10:45</option>
+          <option value="11:00">11:00</option><option value="11:15">11:15</option><option value="11:30">11:30</option><option value="11:45">11:45</option>
+          <option value="12:00">12:00</option><option value="12:15">12:15</option><option value="12:30">12:30</option><option value="12:45">12:45</option>
+          <option value="13:00">13:00</option><option value="13:15">13:15</option><option value="13:30">13:30</option><option value="13:45">13:45</option>
+          <option value="14:00">14:00</option><option value="14:15">14:15</option><option value="14:30">14:30</option><option value="14:45">14:45</option>
+          <option value="15:00">15:00</option><option value="15:15">15:15</option><option value="15:30">15:30</option><option value="15:45">15:45</option>
+          <option value="16:00">16:00</option><option value="16:15">16:15</option><option value="16:30">16:30</option><option value="16:45">16:45</option>
+          <option value="17:00">17:00</option>
+        </select>
       </div>
       <div>
         <label for="e-room">Room</label>
@@ -365,8 +367,7 @@ function submitRequest(){
 // TAKE
 function takeRequest(id){
   pendingTake=id;
-  ['m-coach','m-date','m-link'].forEach(i=>{ document.getElementById(i).value=''; document.getElementById(i).style.borderColor=''; });
-  document.getElementById('m-hour').value=''; document.getElementById('m-min').value='';
+  ['m-coach','m-date','m-time','m-link'].forEach(i=>{ document.getElementById(i).value=''; document.getElementById(i).style.borderColor=''; });
   document.getElementById('m-room').value='';
   document.getElementById('take-modal').classList.add('open');
   setTimeout(()=>document.getElementById('m-coach').focus(),80);
@@ -380,8 +381,7 @@ function confirmTake(){
     r.status='planned';
     r.coach=coach;
     r.date=document.getElementById('m-date').value;
-    const mh=document.getElementById('m-hour').value; const mm=document.getElementById('m-min').value;
-    r.time=(mh&&mm)?mh+':'+mm:'';
+    r.time=document.getElementById('m-time').value;
     r.room=document.getElementById('m-room').value;
     r.link=document.getElementById('m-link').value.trim();
     save(); render();
@@ -397,7 +397,7 @@ function editRequest(id){
   if(!r) return;
   document.getElementById('e-coach').value=r.coach||'';
   document.getElementById('e-date').value=r.date||'';
-  const tp=(r.time||'').split(':'); document.getElementById('e-hour').value=tp[0]||''; document.getElementById('e-min').value=tp[1]||'';
+  document.getElementById('e-time').value=r.time||'';
   document.getElementById('e-room').value=r.room||'';
   document.getElementById('e-link').value=r.link||'';
   document.getElementById('edit-modal').classList.add('open');
@@ -410,8 +410,7 @@ function confirmEdit(){
   if(r){
     r.coach=coach;
     r.date=document.getElementById('e-date').value;
-    const eh=document.getElementById('e-hour').value; const em=document.getElementById('e-min').value;
-    r.time=(eh&&em)?eh+':'+em:'';
+    r.time=document.getElementById('e-time').value;
     r.room=document.getElementById('e-room').value;
     r.link=document.getElementById('e-link').value.trim();
     save(); render();
