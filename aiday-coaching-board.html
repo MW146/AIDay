@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d1225">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Coaching Board</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -22,15 +23,15 @@
 html,body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;font-size:15px;line-height:1.6}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 45% at 15% -5%,rgba(124,106,247,0.13) 0%,transparent 60%),radial-gradient(ellipse 50% 35% at 85% 105%,rgba(184,169,255,0.07) 0%,transparent 60%);pointer-events:none;z-index:0}
 
-.wrap{max-width:1040px;margin:0 auto;padding:0 16px 60px;position:relative;z-index:1}
+.wrap{max-width:1040px;margin:0 auto;padding:env(safe-area-inset-top,0px) 16px 60px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));position:relative;z-index:1}
 
 /* HEADER */
-header{padding:20px 0 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap}
+header{padding:16px 0 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap}
 .h1{font-family:var(--fh);font-size:clamp(1.2rem,5vw,1.8rem);font-weight:600;letter-spacing:-0.02em;line-height:1.1}
 .h1 span{color:var(--accent2)}
 .h-sub{margin-top:4px;color:var(--muted);font-size:13px}
 .btn-primary{background:linear-gradient(135deg,var(--accent),#9b8bf5);border:none;border-radius:9px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;letter-spacing:.02em;padding:10px 20px;cursor:pointer;transition:opacity .18s,transform .15s;white-space:nowrap}
-@media(max-width:620px){.btn-primary{width:100%}header{flex-direction:column;align-items:flex-start}}
+@media(max-width:620px){.btn-primary{width:100%}header{flex-direction:column;align-items:flex-start;padding-top:max(16px,env(safe-area-inset-top,16px))}body{padding-top:env(safe-area-inset-top,0px)}}
 .btn-primary:hover{opacity:.88}
 .btn-primary:active{transform:scale(.97)}
 
@@ -82,10 +83,10 @@ textarea{resize:vertical;min-height:72px}
 .c-topic{font-size:13px;font-weight:500;margin-bottom:3px}
 .c-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:6px}
 
-.c-bot{border-top:1px solid var(--border);padding-top:9px;margin-top:10px}
+.c-bot{border-top:1px solid var(--border);padding-top:10px;margin-top:10px;display:flex;flex-direction:column;gap:0}
 .c-meta{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
 .c-meta strong{color:var(--amber)}
-.c-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.c-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;margin-top:8px}
 
 .btn-sm{border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--fb);font-size:12px;font-weight:500;padding:5px 10px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-sm:hover{border-color:var(--accent);color:var(--accent2)}
@@ -105,7 +106,7 @@ textarea{resize:vertical;min-height:72px}
 .chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:2px 8px 2px 11px;font-size:12px}
 .chip-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0 2px;transition:color .13s}
 .chip-x:hover{color:var(--red)}
-.join-row{display:flex;gap:6px;align-items:center}
+.join-row{display:flex;gap:6px;align-items:center;margin-bottom:8px}
 .join-inp{flex:1;min-width:0;font-size:16px!important;padding:6px 9px!important}
 .btn-join{background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);border-radius:7px;color:var(--accent2);font-family:var(--fb);font-size:12px;font-weight:500;padding:6px 12px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-join:hover{background:var(--accent);border-color:var(--accent);color:#fff}
