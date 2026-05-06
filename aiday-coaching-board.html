@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d1225">
+<link rel="manifest" href="manifest.json">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Coaching Board</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -518,32 +519,40 @@ function cardHTML(r){
   // buttons
   let btns='';
   if(r.status==='open'){
-    btns='<button class="btn-sm btn-take" onclick="takeRequest(\''+r.id+'\')">Take it</button>'
-        +'<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
+    btns='<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
   } else {
     btns='<button class="btn-sm btn-edit" onclick="editRequest(\''+r.id+'\')">Edit</button>'
         +'<button class="btn-sm btn-done" onclick="markDone(\''+r.id+'\')">Mark Done</button>'
         +'<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
   }
 
-  // participants (open and planned)
+  // participants + coach section
   let participants='';
   if(r.status==='open'||r.status==='planned'){
     const chips=(r.participants||[]).map(p=>
       '<span class="chip">'+p+'<button class="chip-x" onclick="removeP(\''+r.id+'\',\''+p.replace(/'/g,"\\'")+'\')"> &times;</button></span>'
     ).join('');
-    participants='<div class="p-sec">'
-      +'<div class="p-lbl">Interested ('+(r.participants||[]).length+')</div>'
+    // Interested section
+    const intSection='<div class="p-sec">'
+      +'<div class="p-lbl">Interested? Add your name</div>'
       +((r.participants||[]).length?'<div class="p-list">'+chips+'</div>':'')
       +'<div class="join-row"><input class="join-inp" id="ji-'+r.id+'" type="text" placeholder="Your name..." autocomplete="off" onkeydown="if(event.key===\'Enter\')joinSession(\''+r.id+'\')"><button class="btn-join" onclick="joinSession(\''+r.id+'\')">Join</button></div>'
       +'</div>';
+    // Coach section (only on open cards)
+    const coachSection = r.status==='open'
+      ? '<div class="coach-section">'
+        +'<div class="coach-label">Are you a coach?</div>'
+        +'<button class="btn-take-full" onclick="takeRequest(\''+r.id+'\')">&#x1F44B; Take this request</button>'
+        +'</div>'
+      : '';
+    participants = intSection + coachSection;
   }
 
   return '<div class="card '+r.status+'">'
     +'<div class="c-top"><span class="c-name">'+r.name+'</span><span class="c-time">'+formatDate(r.ts)+'</span></div>'
     +'<div class="c-topic">'+r.topic+'</div>'
     +(r.desc?'<div class="c-desc">'+r.desc+'</div>':'')
-    +'<div class="c-bot">'+meta+participants+'<div class="c-btns">'+btns+'</div></div>'
+    +'<div class="c-bot">'+meta+participants+(btns?'<div class="c-btns">'+btns+'</div>':'')+'</div>'
     +'</div>';
 }
 
