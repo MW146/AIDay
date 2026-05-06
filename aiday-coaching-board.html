@@ -542,7 +542,7 @@ function cardHTML(r){
     const coachSection = r.status==='open'
       ? '<div class="coach-section">'
         +'<div class="coach-label">Are you a coach?</div>'
-        +'<button class="btn-take-full" onclick="takeRequest(\''+r.id+'\')">&#x1F44B; Take this request</button>'
+        +'<button class="btn-take-full" onclick="takeRequest(\''+r.id+'\')">Take this request</button>'
         +'</div>'
       : '';
     participants = intSection + coachSection;
