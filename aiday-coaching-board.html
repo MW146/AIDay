@@ -374,8 +374,9 @@ async function syncFromSupabase(){
       participants:r.participants||[],
       ts:r.created_at
     }));
-    const newJSON=JSON.stringify(newRequests);
-    const oldJSON=JSON.stringify(D.requests);
+    const sortById=arr=>[...arr].sort((a,b)=>a.id>b.id?1:-1);
+    const newJSON=JSON.stringify(sortById(newRequests));
+    const oldJSON=JSON.stringify(sortById(D.requests));
     if(newJSON===oldJSON) return;
     D.requests=newRequests;
     save();
@@ -607,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function(){
   load();
   render();
   syncFromSupabase();
-  setInterval(syncFromSupabase, 10000);
+  setInterval(syncFromSupabase, 20000);
   setTimeout(checkOverflows, 100);
 });
 </script>
