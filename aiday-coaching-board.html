@@ -80,10 +80,11 @@ textarea{resize:vertical;min-height:72px}
 .card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 15px;transition:border-color .18s;flex:1 1 300px;max-width:380px;display:flex;flex-direction:column;position:relative}
 .card:hover{border-color:rgba(124,106,247,.28);border-left-color:var(--accent)}
 .card.planned{border-left-color:var(--amber)}
-.card.done{border-left-color:var(--green);opacity:.5}
+.card.planned:hover{border-color:rgba(251,191,36,.3);border-left-color:var(--amber)}
 .card.offer-card{border-left-color:var(--teal)}
 .card.offer-card:hover{border-left-color:var(--teal);border-color:rgba(45,212,191,.25)}
-.card.planned:hover{border-color:rgba(251,191,36,.3);border-left-color:var(--amber)}
+.card.offer-card.planned{border-left-color:var(--amber)}
+.card.offer-card.planned:hover{border-color:rgba(251,191,36,.3);border-left-color:var(--amber)}
 @-webkit-keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 .c-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
 .c-name{font-family:var(--fh);font-weight:600;font-size:14px}
@@ -539,9 +540,13 @@ function removeP(id,name){
 
 function cardHTML(r){
   const isOffer=r.entry_type==='offer';
-  const badge=isOffer
-    ? '<span class="type-badge badge-offer">&#9651; Training Offer</span>'
-    : '<span class="type-badge badge-request">&#10070; Coaching Request</span>';
+  const isPlanned=r.status==='planned';
+  const typeColor=isPlanned?'var(--amber)':isOffer?'var(--teal)':'var(--accent2)';
+  const typeBorderColor=isPlanned?'rgba(251,191,36,.35)':isOffer?'rgba(45,212,191,.25)':'rgba(124,106,247,.25)';
+  const typeBgColor=isPlanned?'rgba(251,191,36,.12)':isOffer?'rgba(45,212,191,.12)':'rgba(124,106,247,.15)';
+  const typeLabel=isOffer?'&#9651; Training Offer':'&#10070; Coaching Request';
+  const badge='<span class="type-badge" style="background:'+typeBgColor+';color:'+typeColor+';border:1px solid '+typeBorderColor+'">'+typeLabel+'</span>';
+  const roleColor=isPlanned?'var(--amber)':isOffer?'var(--teal)':'var(--accent2)';
 
   let meta='';
   if(r.status==='planned'){
@@ -549,7 +554,7 @@ function cardHTML(r){
     if(r.coach&&!isOffer) parts.push('Coach: <strong>'+r.coach+'</strong>');
     if(r.room) parts.push(''+r.room);
     if(r.date||r.time) parts.push(''+fmtDT(r.date,r.time));
-    if(r.link) parts.push('<a href="'+r.link+'" target="_blank" style="color:var(--accent2)">Join Teams Call</a>');
+    if(r.link) parts.push('<a href="'+r.link+'" target="_blank" style="color:var(--amber)">Join Teams Call</a>');
     if(parts.length) meta='<div class="c-meta">'+parts.map(p=>'<span>'+p+'</span>').join('')+'</div>';
   }
 
@@ -599,8 +604,8 @@ function cardHTML(r){
   const roleLabel=isOffer?'Host':'Requester';
   const cardClass='card '+(isOffer?'offer-card ':'')+r.status;
   return '<div class="'+cardClass+'">'
-    +'<div class="c-top">'+badge+'<span class="c-time">'+formatDate(r.ts)+'</span></div>'
-    +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--fh);letter-spacing:.04em"><span style="text-transform:uppercase;font-size:10px;letter-spacing:.08em;color:'+(isOffer?'var(--teal)':'var(--accent2)')+'">'+roleLabel+'</span> &nbsp;'+r.name+'</div>'
+    +'<div class="c-top">'+badge+'<span class="c-time">Created '+formatDate(r.ts)+'</span></div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--fh);letter-spacing:.04em"><span style="text-transform:uppercase;font-size:10px;letter-spacing:.08em;color:'+roleColor+'">'+roleLabel+'</span> &nbsp;'+r.name+'</div>'
     +'<div class="c-topic">'+r.topic+'</div>'
     +(r.desc?'<div class="c-desc" id="desc-'+r.id+'">'+r.desc+'</div><button class="c-more" id="more-'+r.id+'" onclick="toggleDesc(\''+r.id+'\')" style="display:none">Show more</button>':'')
     +'<div class="c-bot">'+meta+participants+(btns?'<div class="c-btns" style="padding:10px 16px">'+btns+'</div>':'')+'</div>'
