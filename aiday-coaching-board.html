@@ -159,7 +159,7 @@ select{color:var(--text);appearance:none;-webkit-appearance:none;background-imag
     </div>
     <div class="header-btns">
       <button class="btn-primary" onclick="openForm('request')">&#43; Coaching Request</button>
-      <button class="btn-offer" onclick="openForm('offer')">&#43; Coaching / Training Offer</button>
+      <button class="btn-offer" onclick="openForm('offer')">&#43; Training Offer</button>
     </div>
   </header>
 
@@ -215,7 +215,7 @@ select{color:var(--text);appearance:none;-webkit-appearance:none;background-imag
 <div class="moverlay" id="take-modal" onclick="if(event.target===this)closeModal('take-modal')">
   <div class="modal">
     <h3>Take this Request</h3>
-    <div class="ff">
+    <div class="ff" id="m-coach-row">
       <label for="m-coach">Your Name (Coach)</label>
       <input type="text" id="m-coach" placeholder="Your name" autocomplete="off">
     </div>
@@ -406,7 +406,7 @@ function openForm(type){
   const isOffer=currentFormType==='offer';
   f.classList.add('open');
   f.classList.toggle('offer-mode',isOffer);
-  document.getElementById('form-title').textContent=isOffer?'New Coaching / Training Offer':'New Coaching Request';
+  document.getElementById('form-title').textContent=isOffer?'New Training Offer':'New Coaching Request';
   document.getElementById('topic-label').textContent=isOffer?'Topic / Title':'Topic';
   document.getElementById('rq-topic').placeholder=isOffer?'What will you teach or share?':'What do you need help with?';
   document.getElementById('desc-label').textContent=isOffer?'Description':'Description';
@@ -446,16 +446,31 @@ function submitRequest(){
 
 function takeRequest(id){
   pendingTake=id;
-  ['m-coach','m-date','m-time','m-link'].forEach(i=>{ document.getElementById(i).value=''; document.getElementById(i).style.borderColor=''; });
+  const r=D.requests.find(x=>x.id===id);
+  const isOffer=r&&r.entry_type==='offer';
+  ['m-date','m-time','m-link'].forEach(i=>{ document.getElementById(i).value=''; document.getElementById(i).style.borderColor=''; });
   document.getElementById('m-room').value='';
+  // For offers: pre-fill coach with the creator's name and hide the field
+  const coachField=document.getElementById('m-coach-row');
+  if(isOffer){
+    document.getElementById('m-coach').value=r.name;
+    coachField.style.display='none';
+  } else {
+    document.getElementById('m-coach').value='';
+    document.getElementById('m-coach').style.borderColor='';
+    coachField.style.display='';
+  }
   document.getElementById('take-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('m-coach').focus(),80);
+  if(!isOffer) setTimeout(()=>document.getElementById('m-coach').focus(),80);
 }
 function confirmTake(){
-  const coach=document.getElementById('m-coach').value.trim();
-  document.getElementById('m-coach').style.borderColor=coach?'':'var(--red)';
-  if(!coach) return;
   const r=D.requests.find(x=>x.id===pendingTake);
+  const isOffer=r&&r.entry_type==='offer';
+  const coach=document.getElementById('m-coach').value.trim();
+  if(!isOffer){
+    document.getElementById('m-coach').style.borderColor=coach?'':'var(--red)';
+    if(!coach) return;
+  }
   if(r){
     r.status='planned';r.coach=coach;
     r.date=document.getElementById('m-date').value;
