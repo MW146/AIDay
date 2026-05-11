@@ -545,7 +545,7 @@ function cardHTML(r){
   let meta='';
   if(r.status==='planned'){
     const parts=[];
-    if(r.coach) parts.push((isOffer?'Host: ':'Coach: ')+'<strong>'+r.coach+'</strong>');
+    if(r.coach&&!isOffer) parts.push('Coach: <strong>'+r.coach+'</strong>');
     if(r.room) parts.push(''+r.room);
     if(r.date||r.time) parts.push(''+fmtDT(r.date,r.time));
     if(r.link) parts.push('<a href="'+r.link+'" target="_blank" style="color:var(--accent2)">Join Teams Call</a>');
