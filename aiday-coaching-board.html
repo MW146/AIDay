@@ -586,9 +586,11 @@ function cardHTML(r){
     participants=intSection+coachSection;
   }
 
+  const roleLabel=isOffer?'Host':'Requester';
   const cardClass='card '+(isOffer?'offer-card ':'')+r.status;
   return '<div class="'+cardClass+'">'
-    +'<div class="c-top">'+badge+'<span class="c-name">'+r.name+'</span><span class="c-time">'+formatDate(r.ts)+'</span></div>'
+    +'<div class="c-top">'+badge+'<span class="c-time">'+formatDate(r.ts)+'</span></div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--fh);letter-spacing:.04em"><span style="text-transform:uppercase;font-size:10px;letter-spacing:.08em;color:'+(isOffer?'var(--teal)':'var(--accent2)')+'">'+roleLabel+'</span> &nbsp;'+r.name+'</div>'
     +'<div class="c-topic">'+r.topic+'</div>'
     +(r.desc?'<div class="c-desc" id="desc-'+r.id+'">'+r.desc+'</div><button class="c-more" id="more-'+r.id+'" onclick="toggleDesc(\''+r.id+'\')" style="display:none">Show more</button>':'')
     +'<div class="c-bot">'+meta+participants+(btns?'<div class="c-btns" style="padding:10px 16px">'+btns+'</div>':'')+'</div>'
