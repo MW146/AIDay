@@ -10,20 +10,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Coaching Board</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d1225;--surface:#141929;--surface2:#1a2035;
-  --border:rgba(255,255,255,0.08);
-  --accent:#7c6af7;--accent2:#b8a9ff;
-  --green:#4ade80;--amber:#fbbf24;--red:#f87171;
-  --text:#eeeeff;--muted:rgba(238,238,255,0.42);
-  --fh:'Outfit',sans-serif;--fb:'DM Sans',sans-serif;
-  --r:12px;
+--bg:#0d1225;--surface:#141929;--surface2:#1a2035;
+--border:rgba(255,255,255,0.08);
+--accent:#7c6af7;--accent2:#b8a9ff;
+--green:#4ade80;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;
+--text:#eeeeff;--muted:rgba(238,238,255,0.42);
+--fh:'Outfit',sans-serif;--fb:'DM Sans',sans-serif;
+--r:12px;
 }
 html,body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;font-size:15px;line-height:1.6}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 45% at 15% -5%,rgba(124,106,247,0.13) 0%,transparent 60%),radial-gradient(ellipse 50% 35% at 85% 105%,rgba(184,169,255,0.07) 0%,transparent 60%);pointer-events:none;z-index:0}
-
 .wrap{max-width:1600px;margin:0 auto;padding:env(safe-area-inset-top,0px) 24px 60px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));position:relative;z-index:1}
 
 /* HEADER */
@@ -31,16 +31,26 @@ header{padding:16px 0 18px;display:flex;align-items:center;justify-content:space
 .h1{font-family:var(--fh);font-size:clamp(1.2rem,5vw,1.8rem);font-weight:600;letter-spacing:-0.02em;line-height:1.1}
 .h1 span{color:var(--accent2)}
 .h-sub{margin-top:4px;color:var(--muted);font-size:13px}
+.header-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn-primary{background:linear-gradient(135deg,var(--accent),#9b8bf5);border:none;border-radius:9px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;letter-spacing:.02em;padding:10px 20px;cursor:pointer;transition:opacity .18s,transform .15s;white-space:nowrap}
-@media(max-width:620px){.btn-primary{width:100%}header{flex-direction:column;align-items:flex-start;padding-top:max(16px,env(safe-area-inset-top,16px))}body{padding-top:env(safe-area-inset-top,0px)}}
-.btn-primary:hover{opacity:.88}
-.btn-primary:active{transform:scale(.97)}
+.btn-offer{background:linear-gradient(135deg,#0d9488,#2dd4bf);border:none;border-radius:9px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;letter-spacing:.02em;padding:10px 20px;cursor:pointer;transition:opacity .18s,transform .15s;white-space:nowrap}
+@media(max-width:620px){.btn-primary,.btn-offer{width:100%}header{flex-direction:column;align-items:flex-start;padding-top:max(16px,env(safe-area-inset-top,16px))}body{padding-top:env(safe-area-inset-top,0px)}.header-btns{width:100%;flex-direction:column}}
+.btn-primary:hover,.btn-offer:hover{opacity:.88}
+.btn-primary:active,.btn-offer:active{transform:scale(.97)}
+
+/* TYPE BADGE */
+.type-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:99px;font-family:var(--fh)}
+.badge-request{background:rgba(124,106,247,.15);color:var(--accent2);border:1px solid rgba(124,106,247,.25)}
+.badge-offer{background:rgba(45,212,191,.12);color:var(--teal);border:1px solid rgba(45,212,191,.25)}
 
 /* INLINE FORM */
 .iform{background:var(--surface);border:1px solid rgba(124,106,247,.3);border-radius:var(--r);padding:20px 22px;margin-bottom:24px;position:relative;overflow:hidden;display:none}
 .iform.open{display:block;animation:fu .22s ease}
+.iform.offer-mode{border-color:rgba(45,212,191,.35)}
 .iform::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.iform.offer-mode::before{background:linear-gradient(90deg,#0d9488,#2dd4bf)}
 .iform-title{font-family:var(--fh);font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--accent2);margin-bottom:14px}
+.iform.offer-mode .iform-title{color:var(--teal)}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .ff{margin-bottom:10px}
 @media(max-width:480px){.fg{grid-template-columns:1fr}}
@@ -52,22 +62,18 @@ select option{background:var(--surface2)}
 textarea{resize:vertical;min-height:72px}
 .fa{display:flex;gap:8px;margin-top:12px}
 .btn-sub{flex:2;background:linear-gradient(135deg,var(--accent),#9b8bf5);border:none;border-radius:7px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;cursor:pointer;transition:opacity .18s}
+.btn-sub.offer-sub{background:linear-gradient(135deg,#0d9488,#2dd4bf)}
 .btn-sub:hover{opacity:.88}
 .btn-cx{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:var(--fb);font-size:13px;padding:10px;cursor:pointer}
 
-/* BOARD: two columns */
+/* BOARD */
 .board{display:flex;flex-direction:column;gap:28px}
-@media(max-width:620px){.board{grid-template-columns:1fr}}
-
 .col-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .col-label{font-family:var(--fh);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .col-count{font-family:var(--fh);font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
 .cc-open{background:rgba(124,106,247,.15);color:var(--accent2)}
 .cc-planned{background:rgba(251,191,36,.13);color:var(--amber)}
-
-/* DIVIDER between columns */
 .col-right{border-top:1px solid var(--border);padding-top:24px}
-@media(max-width:620px){.col-right{border-left:none;padding-left:0;border-top:1px solid var(--border);padding-top:24px}}
 
 /* CARDS */
 .cards{display:flex;flex-direction:row;flex-wrap:wrap;gap:12px;align-items:stretch}
@@ -75,20 +81,19 @@ textarea{resize:vertical;min-height:72px}
 .card:hover{border-color:rgba(124,106,247,.28);border-left-color:var(--accent)}
 .card.planned{border-left-color:var(--amber)}
 .card.done{border-left-color:var(--green);opacity:.5}
+.card.offer-card{border-left-color:var(--teal)}
+.card.offer-card:hover{border-left-color:var(--teal);border-color:rgba(45,212,191,.25)}
+.card.offer-card.planned{border-left-color:var(--amber)}
 @-webkit-keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
-
 .c-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
 .c-name{font-family:var(--fh);font-weight:600;font-size:14px}
 .c-time{font-size:11px;color:var(--muted)}
-
 .c-topic{font-size:13px;font-weight:500;margin-bottom:3px}
 .c-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.c-desc.expanded{display:block;-webkit-line-clamp:unset;overflow:visible}.c-more{font-size:11px;color:var(--accent2);background:none;border:none;outline:none;padding:0;cursor:pointer;margin-bottom:6px;font-family:var(--fb);display:block}.c-more:hover{text-decoration:underline}
-
 .c-bot{border-top:1px solid var(--border);padding-top:10px;margin-top:auto;display:flex;flex-direction:column;gap:0}.card.open .c-bot{border-top:1px solid var(--border);padding-top:0;margin-top:auto}.card.open{padding-bottom:0;overflow:hidden}
 .c-meta{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
 .c-meta strong{color:var(--amber)}
 .c-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;margin-top:8px}
-
 .btn-sm{border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--fb);font-size:12px;font-weight:500;padding:5px 10px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-sm:hover{border-color:var(--accent);color:var(--accent2)}
 .btn-take{background:rgba(124,106,247,.12);border-color:rgba(124,106,247,.3);color:var(--accent2)}
@@ -112,6 +117,13 @@ textarea{resize:vertical;min-height:72px}
 .btn-join{background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);border-radius:7px;color:var(--accent2);font-family:var(--fb);font-size:12px;font-weight:500;padding:6px 12px;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-join:hover{background:var(--accent);border-color:var(--accent);color:#fff}
 
+/* QR CODE CORNER */
+.qr-corner{position:fixed;bottom:20px;right:20px;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 24px rgba(0,0,0,.4);cursor:pointer;transition:transform .2s,box-shadow .2s}
+.qr-corner:hover{transform:scale(1.04);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.qr-corner canvas,.qr-corner img{border-radius:6px;display:block}
+.qr-label{font-family:var(--fh);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
+.qr-corner-toggle{position:fixed;bottom:20px;right:20px;z-index:51;background:var(--surface);border:1px solid var(--border);border-radius:50%;width:40px;height:40px;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+
 /* MODAL */
 .moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:20px}
 .moverlay.open{display:flex}
@@ -132,7 +144,6 @@ textarea{resize:vertical;min-height:72px}
 .empty svg{opacity:.16;margin:0 auto 10px;display:block}
 .empty p{font-size:13px}
 
-
 select{color:var(--text);appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(238,238,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -141,42 +152,42 @@ select{color:var(--text);appearance:none;-webkit-appearance:none;background-imag
 </head>
 <body>
 <div class="wrap">
-
   <header>
     <div>
       <div class="h1">Coaching <span>Board</span></div>
-      <div class="h-sub">Request support — a coach will pick it up and plan a session with you.</div>
+      <div class="h-sub">Request support — or share your knowledge with the team.</div>
     </div>
-    <button class="btn-primary" onclick="openForm()">&#43; Request Coaching</button>
+    <div class="header-btns">
+      <button class="btn-primary" onclick="openForm('request')">&#43; Coaching Request</button>
+      <button class="btn-offer" onclick="openForm('offer')">&#43; Coaching / Training Offer</button>
+    </div>
   </header>
 
-  <!-- NEW REQUEST FORM -->
+  <!-- FORM -->
   <div class="iform" id="req-form">
-    <div class="iform-title">New Coaching Request</div>
+    <div class="iform-title" id="form-title">New Coaching Request</div>
     <div class="fg">
       <div>
         <label for="rq-name">Your Name</label>
         <input type="text" id="rq-name" placeholder="Jane Doe" autocomplete="off">
       </div>
       <div>
-        <label for="rq-topic">Topic</label>
-        <input type="text" id="rq-topic" placeholder="What do you need help with?" autocomplete="off">
+        <label for="rq-topic" id="topic-label">Topic</label>
+        <input type="text" id="rq-topic" placeholder="What do you need help with?" autocomplete="off" id="rq-topic">
       </div>
     </div>
     <div class="ff">
-      <label for="rq-desc">Description</label>
+      <label for="rq-desc" id="desc-label">Description</label>
       <textarea id="rq-desc" placeholder="Describe what you're working on and what kind of support would help..."></textarea>
     </div>
     <div class="fa">
       <button class="btn-cx" onclick="closeForm()">Cancel</button>
-      <button class="btn-sub" onclick="submitRequest()">Submit Request</button>
+      <button class="btn-sub" id="submit-btn" onclick="submitRequest()">Submit Request</button>
     </div>
   </div>
 
   <!-- BOARD -->
   <div class="board">
-
-    <!-- LEFT: Open -->
     <div>
       <div class="col-head">
         <span class="col-label">Open</span>
@@ -184,8 +195,6 @@ select{color:var(--text);appearance:none;-webkit-appearance:none;background-imag
       </div>
       <div class="cards" id="list-open"></div>
     </div>
-
-    <!-- RIGHT: Planned -->
     <div class="col-right">
       <div class="col-head">
         <span class="col-label">Planned</span>
@@ -193,8 +202,13 @@ select{color:var(--text);appearance:none;-webkit-appearance:none;background-imag
       </div>
       <div class="cards" id="list-planned"></div>
     </div>
-
   </div>
+</div>
+
+<!-- QR CORNER -->
+<div class="qr-corner" id="qr-corner" title="Scan to open on your phone">
+  <div id="qr-code"></div>
+  <div class="qr-label">Open on Phone</div>
 </div>
 
 <!-- TAKE MODAL -->
@@ -344,56 +358,41 @@ const KEY='cbv5';
 let D={requests:[]};
 let pendingTake=null;
 let pendingEdit=null;
+let currentFormType='request';
 
 function load(){
-  try{
-    var raw=localStorage.getItem(KEY);
-    D=raw?JSON.parse(raw):{requests:[]};
-  } catch(e){ D={requests:[]}; }
+  try{ var raw=localStorage.getItem(KEY); D=raw?JSON.parse(raw):{requests:[]}; }
+  catch(e){ D={requests:[]}; }
   if(!D||!D.requests) D={requests:[]};
 }
 function save(){
-  try{ localStorage.setItem(KEY,JSON.stringify(D)); }
-  catch(e){}
+  try{ localStorage.setItem(KEY,JSON.stringify(D)); } catch(e){}
 }
+
 async function syncFromSupabase(){
   try{
     const rows=await sbGet();
     if(!rows||rows.error) return;
     const newRequests=rows.map(r=>({
-      id:r.id,
-      name:r.name,
-      topic:r.topic,
-      desc:r.description,
-      status:r.status,
-      coach:r.coach,
-      date:r.date,
-      time:r.time,
-      room:r.room,
-      link:r.link,
-      participants:r.participants||[],
-      ts:r.created_at
+      id:r.id,name:r.name,topic:r.topic,desc:r.description,
+      status:r.status,coach:r.coach,date:r.date,time:r.time,
+      room:r.room,link:r.link,participants:r.participants||[],
+      ts:r.created_at,
+      entry_type:r.entry_type||'request'
     }));
     const sortById=arr=>[...arr].sort((a,b)=>a.id>b.id?1:-1);
-    const newJSON=JSON.stringify(sortById(newRequests));
-    const oldJSON=JSON.stringify(sortById(D.requests));
-    if(newJSON===oldJSON) return;
+    if(JSON.stringify(sortById(newRequests))===JSON.stringify(sortById(D.requests))) return;
     D.requests=newRequests;
-    save();
-    render();
+    save(); render();
   } catch(e){ console.error('sync error',e); }
 }
 
-function formatDate(ts){
-  return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-}
-
+function formatDate(ts){ return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
 function fmtDT(date,time){
   if(!date) return '';
   const d=new Date(date+(time?'T'+time:'T00:00'));
   return d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'})+(time?' &middot; '+time:'');
 }
-
 function toast(msg){
   const el=document.getElementById('toast');
   document.getElementById('toast-msg').textContent=msg;
@@ -401,15 +400,25 @@ function toast(msg){
   setTimeout(()=>el.classList.remove('show'),2600);
 }
 
-function openForm(){
+function openForm(type){
+  currentFormType=type||'request';
   const f=document.getElementById('req-form');
+  const isOffer=currentFormType==='offer';
   f.classList.add('open');
+  f.classList.toggle('offer-mode',isOffer);
+  document.getElementById('form-title').textContent=isOffer?'New Coaching / Training Offer':'New Coaching Request';
+  document.getElementById('topic-label').textContent=isOffer?'Topic / Title':'Topic';
+  document.getElementById('rq-topic').placeholder=isOffer?'What will you teach or share?':'What do you need help with?';
+  document.getElementById('desc-label').textContent=isOffer?'Description':'Description';
+  document.getElementById('rq-desc').placeholder=isOffer?'Describe what you can offer — format, duration, audience...':'Describe what you\'re working on and what kind of support would help...';
+  const btn=document.getElementById('submit-btn');
+  btn.textContent=isOffer?'Post Offer':'Submit Request';
+  btn.classList.toggle('offer-sub',isOffer);
   setTimeout(()=>f.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
 function closeForm(){ document.getElementById('req-form').classList.remove('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
-// SUBMIT
 function submitRequest(){
   const name=document.getElementById('rq-name').value.trim();
   const topic=document.getElementById('rq-topic').value.trim();
@@ -417,16 +426,24 @@ function submitRequest(){
   document.getElementById('rq-name').style.borderColor=name?'':'var(--red)';
   document.getElementById('rq-topic').style.borderColor=topic?'':'var(--red)';
   if(!name||!topic) return;
-  const newReq={id:Date.now().toString(),name,topic,desc,status:'open',coach:null,date:'',time:'',room:'',link:'',participants:[],ts:Date.now()};
+  const newReq={
+    id:Date.now().toString(),name,topic,desc,
+    status:'open',coach:null,date:'',time:'',room:'',link:'',
+    participants:[],ts:Date.now(),
+    entry_type:currentFormType
+  };
   D.requests.unshift(newReq);
   save(); render();
-  sbInsert({id:newReq.id,name:newReq.name,topic:newReq.topic,description:newReq.desc,status:'open',coach:null,date:'',time:'',room:'',link:'',participants:[],created_at:newReq.ts}).catch(console.error);
+  sbInsert({
+    id:newReq.id,name,topic,description:desc,status:'open',
+    coach:null,date:'',time:'',room:'',link:'',participants:[],
+    created_at:newReq.ts,entry_type:currentFormType
+  }).catch(console.error);
   ['rq-name','rq-topic','rq-desc'].forEach(i=>document.getElementById(i).value='');
   closeForm();
-  toast('Request submitted!');
+  toast(currentFormType==='offer'?'Offer posted!':'Request submitted!');
 }
 
-// TAKE
 function takeRequest(id){
   pendingTake=id;
   ['m-coach','m-date','m-time','m-link'].forEach(i=>{ document.getElementById(i).value=''; document.getElementById(i).style.borderColor=''; });
@@ -440,8 +457,7 @@ function confirmTake(){
   if(!coach) return;
   const r=D.requests.find(x=>x.id===pendingTake);
   if(r){
-    r.status='planned';
-    r.coach=coach;
+    r.status='planned';r.coach=coach;
     r.date=document.getElementById('m-date').value;
     r.time=document.getElementById('m-time').value;
     r.room=document.getElementById('m-room').value;
@@ -453,7 +469,6 @@ function confirmTake(){
   toast('Session planned!');
 }
 
-// EDIT
 function editRequest(id){
   pendingEdit=id;
   const r=D.requests.find(x=>x.id===id);
@@ -471,18 +486,17 @@ function confirmEdit(){
   if(!coach) return;
   const r=D.requests.find(x=>x.id===pendingEdit);
   if(r){
-    r.coach=coach;
-    r.date=document.getElementById('e-date').value;
+    r.coach=coach;r.date=document.getElementById('e-date').value;
     r.time=document.getElementById('e-time').value;
     r.room=document.getElementById('e-room').value;
     r.link=document.getElementById('e-link').value.trim();
     save(); render();
+    sbUpdate(r.id,{coach:r.coach,date:r.date,time:r.time,room:r.room,link:r.link}).catch(console.error);
   }
   closeModal('edit-modal');
   toast('Details updated!');
 }
 
-// DONE / DELETE
 function markDone(id){
   const r=D.requests.find(x=>x.id===id);
   if(r){ r.status='done'; save(); render(); toast('Marked as done ✓'); sbUpdate(r.id,{status:'done'}).catch(console.error); }
@@ -493,7 +507,6 @@ function deleteRequest(id){
   save(); render();
 }
 
-// PARTICIPANTS
 function joinSession(id){
   const inp=document.getElementById('ji-'+id);
   const name=inp.value.trim();
@@ -508,73 +521,76 @@ function removeP(id,name){
   if(r){ r.participants=r.participants.filter(p=>p!==name); save(); render(); sbUpdate(r.id,{participants:r.participants}).catch(console.error); }
 }
 
-// RENDER
 function cardHTML(r){
-  // meta for planned
+  const isOffer=r.entry_type==='offer';
+  const badge=isOffer
+    ? '<span class="type-badge badge-offer">&#9651; Training Offer</span>'
+    : '<span class="type-badge badge-request">&#10070; Coaching Request</span>';
+
   let meta='';
   if(r.status==='planned'){
     const parts=[];
-    if(r.coach) parts.push('Coach: <strong>'+r.coach+'</strong>');
-    if(r.room)  parts.push(''+r.room);
+    if(r.coach) parts.push((isOffer?'Host: ':'Coach: ')+'<strong>'+r.coach+'</strong>');
+    if(r.room) parts.push(''+r.room);
     if(r.date||r.time) parts.push(''+fmtDT(r.date,r.time));
-    if(r.link)  parts.push('<a href="'+r.link+'" target="_blank" style="color:var(--accent2)">Join Teams Call</a>');
+    if(r.link) parts.push('<a href="'+r.link+'" target="_blank" style="color:var(--accent2)">Join Teams Call</a>');
     if(parts.length) meta='<div class="c-meta">'+parts.map(p=>'<span>'+p+'</span>').join('')+'</div>';
   }
 
-  // buttons
   let btns='';
   if(r.status==='open'){
     btns='<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
   } else {
     btns='<button class="btn-sm btn-edit" onclick="editRequest(\''+r.id+'\')" style="position:absolute;top:12px;right:12px;padding:4px 10px;font-size:11px">Edit</button>'
-        +'<button onclick="markDone(\''+r.id+'\')" style="width:100%;background:linear-gradient(135deg,#7c6af7,#9b8bf5);border:none;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;border-radius:8px;cursor:pointer;margin-bottom:8px">Mark Done</button>'
-        +'<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
+      +'<button onclick="markDone(\''+r.id+'\')" style="width:100%;background:linear-gradient(135deg,#7c6af7,#9b8bf5);border:none;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;border-radius:8px;cursor:pointer;margin-bottom:8px">Mark Done</button>'
+      +'<button class="btn-sm btn-del" onclick="deleteRequest(\''+r.id+'\')">Delete</button>';
   }
 
-  // participants + coach section
   let participants='';
   if(r.status==='open'||r.status==='planned'){
     const chips=(r.participants||[]).map(p=>
       '<span class="chip">'+p+'<button class="chip-x" onclick="removeP(\''+r.id+'\',\''+p.replace(/'/g,"\\'")+'\')"> &times;</button></span>'
     ).join('');
-    // Interested section
+
+    const intLabel=isOffer?'Interested? Add your name':'Interested? Add your name';
     const intSection='<div style="padding:14px 16px;background:var(--surface2);border-top:1px solid var(--border)">'
-      +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-family:var(--fh);font-weight:700">Interested? Add your name</div>'
+      +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-family:var(--fh);font-weight:700">'+intLabel+'</div>'
       +((r.participants||[]).length?'<div class="p-list">'+chips+'</div>':'')
       +'<div class="join-row" style="margin-bottom:0"><input class="join-inp" id="ji-'+r.id+'" type="text" placeholder="Your name..." autocomplete="off" onkeydown="if(event.key===\'Enter\')joinSession(\''+r.id+'\')"><button class="btn-join" onclick="joinSession(\''+r.id+'\')">Join</button></div>'
       +'</div>';
-    // Coach section (only on open cards)
-    const coachSection = r.status==='open'
+
+    const actionLabel=isOffer?'Are you hosting this?':'Are you a coach?';
+    const actionBtn=isOffer?'Plan this session':'Take this request';
+    const coachSection=r.status==='open'
       ? '<div style="padding:14px 16px;background:var(--surface2);border-top:1px solid var(--border)">'
-        +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-family:var(--fh);font-weight:700">Are you a coach?</div>'
-        +'<button onclick="takeRequest(\''+r.id+'\')" style="width:100%;background:linear-gradient(135deg,#7c6af7,#9b8bf5);border:none;border-radius:8px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;cursor:pointer;letter-spacing:.02em">Take this request</button>'
+        +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-family:var(--fh);font-weight:700">'+actionLabel+'</div>'
+        +'<button onclick="takeRequest(\''+r.id+'\')" style="width:100%;background:'+(isOffer?'linear-gradient(135deg,#0d9488,#2dd4bf)':'linear-gradient(135deg,#7c6af7,#9b8bf5)')+';border:none;border-radius:8px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;cursor:pointer;letter-spacing:.02em">'+actionBtn+'</button>'
         +'</div>'
       : '';
-    participants = intSection + coachSection;
+
+    participants=intSection+coachSection;
   }
 
-  return '<div class="card '+r.status+'">'
-    +'<div class="c-top"><span class="c-name">'+r.name+'</span><span class="c-time">'+formatDate(r.ts)+'</span></div>'
+  const cardClass='card '+(isOffer?'offer-card ':'')+r.status;
+  return '<div class="'+cardClass+'">'
+    +'<div class="c-top">'+badge+'<span class="c-name">'+r.name+'</span><span class="c-time">'+formatDate(r.ts)+'</span></div>'
     +'<div class="c-topic">'+r.topic+'</div>'
     +(r.desc?'<div class="c-desc" id="desc-'+r.id+'">'+r.desc+'</div><button class="c-more" id="more-'+r.id+'" onclick="toggleDesc(\''+r.id+'\')" style="display:none">Show more</button>':'')
     +'<div class="c-bot">'+meta+participants+(btns?'<div class="c-btns" style="padding:10px 16px">'+btns+'</div>':'')+'</div>'
     +'</div>';
 }
 
-function render(){ setTimeout(checkOverflows,50);
+function render(){
+  setTimeout(checkOverflows,50);
   const open=D.requests.filter(r=>r.status==='open');
   const planned=D.requests.filter(r=>r.status==='planned');
-
   document.getElementById('count-open').textContent=open.length;
   document.getElementById('count-planned').textContent=planned.length;
-
   const lo=document.getElementById('list-open');
   const lp=document.getElementById('list-planned');
-
   lo.innerHTML=open.length
     ? open.map(cardHTML).join('')
-    : '<div class="empty"><svg width="36" height="36" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M8 12h8M8 8h5M8 16h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><p>No open requests.</p></div>';
-
+    : '<div class="empty"><svg width="36" height="36" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M8 12h8M8 8h5M8 16h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><p>No open requests or offers.</p></div>';
   lp.innerHTML=planned.length
     ? planned.map(cardHTML).join('')
     : '<div class="empty"><svg width="36" height="36" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><p>No planned sessions yet.</p></div>';
@@ -583,33 +599,36 @@ function render(){ setTimeout(checkOverflows,50);
 function toggleDesc(id){
   const el=document.getElementById('desc-'+id);
   const btn=document.getElementById('more-'+id);
-  if(el.classList.contains('expanded')){
-    el.classList.remove('expanded');
-    btn.textContent='Show more';
-  } else {
-    el.classList.add('expanded');
-    btn.textContent='Show less';
-  }
+  if(el.classList.contains('expanded')){ el.classList.remove('expanded'); btn.textContent='Show more'; }
+  else { el.classList.add('expanded'); btn.textContent='Show less'; }
 }
-
 function checkOverflows(){
   document.querySelectorAll('.c-desc').forEach(el=>{
     const id=el.id.replace('desc-','');
     const btn=document.getElementById('more-'+id);
-    if(btn && el.scrollHeight > el.clientHeight+4){
-      btn.style.display='inline';
-    } else if(btn){
-      btn.style.display='none';
-    }
+    if(btn && el.scrollHeight>el.clientHeight+4) btn.style.display='inline';
+    else if(btn) btn.style.display='none';
   });
 }
 
-document.addEventListener('DOMContentLoaded', function(){
-  load();
-  render();
-  syncFromSupabase();
-  setInterval(syncFromSupabase, 20000);
-  setTimeout(checkOverflows, 100);
+function initQR(){
+  const url=window.location.href;
+  const container=document.getElementById('qr-code');
+  new QRCode(container,{
+    text:url,
+    width:96,
+    height:96,
+    colorDark:'#1a1a2e',
+    colorLight:'#ffffff',
+    correctLevel:QRCode.CorrectLevel.M
+  });
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  load(); render(); syncFromSupabase();
+  setInterval(syncFromSupabase,20000);
+  setTimeout(checkOverflows,100);
+  initQR();
 });
 </script>
 </body>
