@@ -568,10 +568,19 @@ function cardHTML(r){
     ).join('');
 
     const intLabel=isOffer?'Interested? Add your name':'Interested? Add your name';
+    const joinBtnStyle=r.status==='planned'
+      ? 'background:rgba(251,191,36,.15)!important;border:1px solid rgba(251,191,36,.4)!important;color:var(--amber)!important;border-radius:7px;font-family:var(--fb);font-size:12px;font-weight:500;padding:6px 12px;cursor:pointer;white-space:nowrap'
+      : 'background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);border-radius:7px;color:var(--accent2);font-family:var(--fb);font-size:12px;font-weight:500;padding:6px 12px;cursor:pointer;white-space:nowrap';
+    const joinInputStyle=r.status==='planned'
+      ? 'flex:1;min-width:0;font-size:16px;padding:6px 9px;border-color:rgba(251,191,36,0.25);background:var(--surface2);border-radius:7px;color:var(--text);font-family:var(--fb);outline:none;border-width:1px;border-style:solid'
+      : 'flex:1;min-width:0;font-size:16px;padding:6px 9px;';
     const intSection='<div style="padding:14px 16px;background:var(--surface2);border-top:1px solid var(--border)">'
       +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-family:var(--fh);font-weight:700">'+intLabel+'</div>'
       +((r.participants||[]).length?'<div class="p-list">'+chips+'</div>':'')
-      +'<div class="join-row" style="margin-bottom:0"><input class="join-inp" id="ji-'+r.id+'" type="text" placeholder="Your name..." autocomplete="off" onkeydown="if(event.key===\'Enter\')joinSession(\''+r.id+'\')"><button class="btn-join" onclick="joinSession(\''+r.id+'\')">Join</button></div>'
+      +'<div class="join-row" style="margin-bottom:0">'
+      +'<input id="ji-'+r.id+'" type="text" placeholder="Your name..." autocomplete="off" style="'+joinInputStyle+'" onkeydown="if(event.key===\'Enter\')joinSession(\''+r.id+'\')">'
+      +'<button onclick="joinSession(\''+r.id+'\')" style="'+joinBtnStyle+'">Join</button>'
+      +'</div>'
       +'</div>';
 
     const actionLabel=isOffer?'Are you hosting this?':'Are you a coach?';
