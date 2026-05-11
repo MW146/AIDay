@@ -579,7 +579,7 @@ function cardHTML(r){
     const coachSection=r.status==='open'
       ? '<div style="padding:14px 16px;background:var(--surface2);border-top:1px solid var(--border)">'
         +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-family:var(--fh);font-weight:700">'+actionLabel+'</div>'
-        +'<button onclick="takeRequest(\''+r.id+'\')" style="width:100%;background:linear-gradient(135deg,#b45309,#fbbf24);border:none;border-radius:8px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;cursor:pointer;letter-spacing:.02em">'+actionBtn+'</button>'
+        +'<button onclick="takeRequest(\''+r.id+'\')" style="width:100%;background:'+(isOffer?'linear-gradient(135deg,#0d9488,#2dd4bf)':'linear-gradient(135deg,#7c6af7,#9b8bf5)')+';border:none;border-radius:8px;color:#fff;font-family:var(--fh);font-size:13px;font-weight:600;padding:10px;cursor:pointer;letter-spacing:.02em">'+actionBtn+'</button>'
         +'</div>'
       : '';
 
